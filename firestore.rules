@@ -1,0 +1,44 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAutenticado() {
+      return request.auth != null;
+    }
+
+    function isMaster() {
+      return isAutenticado() && (
+        request.auth.token.email == 'pauloaugusto.silvaborges@gmail.com' ||
+        request.auth.token.email == 'fabricadecoresgoiania@gmail.com'
+      );
+    }
+
+    // Acesso irrestrito para os fundadores do SaaS
+    match /{document=**} {
+      allow read, write: if isMaster();
+    }
+
+    // Consulta de licenca por sistemas clientes (FC-Gestao, FC-Food, etc.)
+    match /empresas/{empresaId} {
+      allow read: if true;
+    }
+
+    // Consulta de catalogo de planos e softwares
+    match /planos/{planoId} {
+      allow read: if true;
+    }
+
+    match /planos_saas/{planoId} {
+      allow read: if true;
+    }
+
+    match /sistemas/{sistemaId} {
+      allow read: if true;
+    }
+
+    match /sistemas_saas/{sistemaId} {
+      allow read: if true;
+    }
+  }
+}
