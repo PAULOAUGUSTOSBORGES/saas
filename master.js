@@ -1850,10 +1850,13 @@ function abrirModalFuncionarioMaster(funcId = null) {
 
         const temDash = u.perm_dashboard !== false;
         const temPdv = u.perm_pdv !== false;
+        const temPdvCaixa = u.perm_pdv_lancar_caixa !== undefined ? !!u.perm_pdv_lancar_caixa : temPdv;
+        const temPdvBalcao = u.perm_pdv_venda_balcao !== undefined ? !!u.perm_pdv_venda_balcao : temPdv;
         const temCadastros = u.perm_cadastros !== false;
         const temProd = u.perm_produtos !== undefined ? !!u.perm_produtos : temCadastros;
         const temCli = u.perm_clientes !== undefined ? !!u.perm_clientes : temCadastros;
         const temForn = u.perm_fornecedores !== undefined ? !!u.perm_fornecedores : temCadastros;
+        const temFunc = u.perm_funcionarios !== undefined ? !!u.perm_funcionarios : isAdmin;
 
         const temVendasOp = u.perm_vendas_op !== undefined ? !!u.perm_vendas_op : temPdv;
         const temOrcamentos = u.perm_orcamentos !== undefined ? !!u.perm_orcamentos : temPdv;
@@ -1862,6 +1865,7 @@ function abrirModalFuncionarioMaster(funcId = null) {
         const temGestao = !!u.perm_gestao;
         const temFinanceiro = u.perm_financeiro !== undefined ? !!u.perm_financeiro : temGestao;
         const temCaixa = u.perm_caixa !== undefined ? !!u.perm_caixa : (temPdv || temGestao);
+        const temCaixaLoja = u.perm_caixa_loja !== undefined ? !!u.perm_caixa_loja : (temCaixa || temGestao);
         const temCompras = u.perm_compras !== undefined ? !!u.perm_compras : temGestao;
         const temRelatorios = u.perm_relatorios !== undefined ? !!u.perm_relatorios : temGestao;
         const temAgenda = u.perm_agenda !== undefined ? !!u.perm_agenda : temGestao;
@@ -1870,14 +1874,18 @@ function abrirModalFuncionarioMaster(funcId = null) {
 
         setMasterCheck('func-perm-dashboard', temDash);
         setMasterCheck('func-perm-pdv', temPdv);
+        setMasterCheck('func-perm-pdv-caixa', temPdvCaixa);
+        setMasterCheck('func-perm-pdv-balcao', temPdvBalcao);
         setMasterCheck('func-perm-vendas-op', temVendasOp);
         setMasterCheck('func-perm-orcamentos', temOrcamentos);
         setMasterCheck('func-perm-fiscal', temFiscal);
         setMasterCheck('func-perm-produtos', temProd);
         setMasterCheck('func-perm-clientes', temCli);
         setMasterCheck('func-perm-fornecedores', temForn);
+        setMasterCheck('func-perm-funcionarios', temFunc);
         setMasterCheck('func-perm-financeiro', temFinanceiro);
         setMasterCheck('func-perm-caixa', temCaixa);
+        setMasterCheck('func-perm-caixa-loja', temCaixaLoja);
         setMasterCheck('func-perm-compras', temCompras);
         setMasterCheck('func-perm-relatorios', temRelatorios);
         setMasterCheck('func-perm-agenda', temAgenda);
@@ -1908,14 +1916,18 @@ function abrirModalFuncionarioMaster(funcId = null) {
 
         setMasterCheck('func-perm-dashboard', true);
         setMasterCheck('func-perm-pdv', true);
+        setMasterCheck('func-perm-pdv-caixa', true);
+        setMasterCheck('func-perm-pdv-balcao', true);
         setMasterCheck('func-perm-vendas-op', true);
         setMasterCheck('func-perm-orcamentos', true);
         setMasterCheck('func-perm-fiscal', false);
         setMasterCheck('func-perm-produtos', true);
         setMasterCheck('func-perm-clientes', true);
         setMasterCheck('func-perm-fornecedores', false);
+        setMasterCheck('func-perm-funcionarios', false);
         setMasterCheck('func-perm-financeiro', false);
         setMasterCheck('func-perm-caixa', false);
+        setMasterCheck('func-perm-caixa-loja', false);
         setMasterCheck('func-perm-compras', false);
         setMasterCheck('func-perm-relatorios', false);
         setMasterCheck('func-perm-agenda', false);
@@ -1934,14 +1946,18 @@ function marcarTodasPermissoesMaster(estado) {
     const ids = [
         'func-perm-dashboard',
         'func-perm-pdv',
+        'func-perm-pdv-caixa',
+        'func-perm-pdv-balcao',
         'func-perm-vendas-op',
         'func-perm-orcamentos',
         'func-perm-fiscal',
         'func-perm-produtos',
         'func-perm-clientes',
         'func-perm-fornecedores',
+        'func-perm-funcionarios',
         'func-perm-financeiro',
         'func-perm-caixa',
+        'func-perm-caixa-loja',
         'func-perm-compras',
         'func-perm-relatorios',
         'func-perm-agenda',
@@ -1975,14 +1991,18 @@ function atualizarPerfilFuncionarioMaster(cargo) {
     } else if (cargo === 'vendedor') {
         setMasterCheck('func-perm-dashboard', true);
         setMasterCheck('func-perm-pdv', true);
+        setMasterCheck('func-perm-pdv-caixa', true);
+        setMasterCheck('func-perm-pdv-balcao', true);
         setMasterCheck('func-perm-vendas-op', true);
         setMasterCheck('func-perm-orcamentos', true);
         setMasterCheck('func-perm-fiscal', false);
         setMasterCheck('func-perm-produtos', true);
         setMasterCheck('func-perm-clientes', true);
         setMasterCheck('func-perm-fornecedores', false);
+        setMasterCheck('func-perm-funcionarios', false);
         setMasterCheck('func-perm-financeiro', false);
         setMasterCheck('func-perm-caixa', false);
+        setMasterCheck('func-perm-caixa-loja', false);
         setMasterCheck('func-perm-compras', false);
         setMasterCheck('func-perm-relatorios', false);
         setMasterCheck('func-perm-agenda', false);
@@ -1992,14 +2012,18 @@ function atualizarPerfilFuncionarioMaster(cargo) {
         // Operador
         setMasterCheck('func-perm-dashboard', false);
         setMasterCheck('func-perm-pdv', true);
+        setMasterCheck('func-perm-pdv-caixa', true);
+        setMasterCheck('func-perm-pdv-balcao', true);
         setMasterCheck('func-perm-vendas-op', true);
         setMasterCheck('func-perm-orcamentos', false);
         setMasterCheck('func-perm-fiscal', false);
         setMasterCheck('func-perm-produtos', false);
         setMasterCheck('func-perm-clientes', true);
         setMasterCheck('func-perm-fornecedores', false);
+        setMasterCheck('func-perm-funcionarios', false);
         setMasterCheck('func-perm-financeiro', false);
         setMasterCheck('func-perm-caixa', false);
+        setMasterCheck('func-perm-caixa-loja', false);
         setMasterCheck('func-perm-compras', false);
         setMasterCheck('func-perm-relatorios', false);
         setMasterCheck('func-perm-agenda', false);
@@ -2039,22 +2063,26 @@ async function salvarFuncionarioPeloMaster(e) {
 
     const perm_dashboard = getMasterCheck('func-perm-dashboard') || isAdmin;
     const perm_pdv = getMasterCheck('func-perm-pdv') || isAdmin;
+    const perm_pdv_lancar_caixa = getMasterCheck('func-perm-pdv-caixa') || isAdmin;
+    const perm_pdv_venda_balcao = getMasterCheck('func-perm-pdv-balcao') || isAdmin;
     const perm_vendas_op = getMasterCheck('func-perm-vendas-op') || isAdmin;
     const perm_orcamentos = getMasterCheck('func-perm-orcamentos') || isAdmin;
     const perm_fiscal = getMasterCheck('func-perm-fiscal') || isAdmin;
     const perm_produtos = getMasterCheck('func-perm-produtos') || isAdmin;
     const perm_clientes = getMasterCheck('func-perm-clientes') || isAdmin;
     const perm_fornecedores = getMasterCheck('func-perm-fornecedores') || isAdmin;
+    const perm_funcionarios = getMasterCheck('func-perm-funcionarios') || isAdmin;
     const perm_financeiro = getMasterCheck('func-perm-financeiro') || isAdmin;
     const perm_caixa = getMasterCheck('func-perm-caixa') || isAdmin;
+    const perm_caixa_loja = getMasterCheck('func-perm-caixa-loja') || isAdmin;
     const perm_compras = getMasterCheck('func-perm-compras') || isAdmin;
     const perm_relatorios = getMasterCheck('func-perm-relatorios') || isAdmin;
     const perm_agenda = getMasterCheck('func-perm-agenda') || isAdmin;
     const perm_marketing = getMasterCheck('func-perm-marketing') || isAdmin;
     const perm_config = getMasterCheck('func-perm-config') || isAdmin;
 
-    const perm_cadastros = perm_produtos || perm_clientes || perm_fornecedores;
-    const perm_gestao = perm_financeiro || perm_caixa || perm_compras || perm_relatorios || perm_agenda || perm_marketing || perm_fiscal;
+    const perm_cadastros = perm_produtos || perm_clientes || perm_fornecedores || perm_funcionarios;
+    const perm_gestao = perm_financeiro || perm_caixa || perm_caixa_loja || perm_compras || perm_relatorios || perm_agenda || perm_marketing || perm_fiscal;
 
     const dadosFunc = {
         nome: nome,
@@ -2068,14 +2096,18 @@ async function salvarFuncionarioPeloMaster(e) {
         status: status,
         perm_dashboard: perm_dashboard,
         perm_pdv: perm_pdv,
+        perm_pdv_lancar_caixa: perm_pdv_lancar_caixa,
+        perm_pdv_venda_balcao: perm_pdv_venda_balcao,
         perm_vendas_op: perm_vendas_op,
         perm_orcamentos: perm_orcamentos,
         perm_fiscal: perm_fiscal,
         perm_produtos: perm_produtos,
         perm_clientes: perm_clientes,
         perm_fornecedores: perm_fornecedores,
+        perm_funcionarios: perm_funcionarios,
         perm_financeiro: perm_financeiro,
         perm_caixa: perm_caixa,
+        perm_caixa_loja: perm_caixa_loja,
         perm_compras: perm_compras,
         perm_relatorios: perm_relatorios,
         perm_agenda: perm_agenda,
