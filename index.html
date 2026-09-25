@@ -686,7 +686,7 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             <div>
                                 <label class="font-bold text-[11px] text-slate-300 block mb-1">Data de Vencimento</label>
                                 <input type="date" id="dossie-ass-vencimento" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold outline-none focus:border-amber-400 text-white">
@@ -698,6 +698,14 @@
                                     <option value="TRIAL">🟡 TRIAL (Em Período de Avaliação)</option>
                                     <option value="PENDENTE">🟠 PENDENTE (Em Atraso - Com Aviso)</option>
                                     <option value="BLOQUEADO">⛔ BLOQUEADO (Acesso Bloqueado para Todos)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="font-bold text-[11px] text-slate-300 block mb-1">Modelo de PDV (Operação)</label>
+                                <select id="dossie-ass-fluxo-pdv" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold outline-none focus:border-cyan-400 text-white">
+                                    <option value="direto">⚡ PDV Direto (Recebe e Finaliza Lá)</option>
+                                    <option value="caixa">📦 Pré-Venda (Vai para o Caixa Central)</option>
+                                    <option value="ambos">🔄 Ambos (Configurado na Loja)</option>
                                 </select>
                             </div>
                         </div>
@@ -1324,6 +1332,18 @@
                 <div>
                     <label class="font-bold text-xs text-slate-300 block mb-1">Breve Descrição do Público</label>
                     <input type="text" id="plano-form-desc" placeholder="Ex: Ideal para lojas em crescimento e comércio em geral" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 font-medium outline-none focus:border-blue-400 text-white text-xs">
+                </div>
+
+                <div>
+                    <label class="font-bold text-xs text-slate-300 block mb-1">
+                        <i class="fa-solid fa-cash-register text-amber-400 mr-1"></i> Modelo de Operação do PDV *
+                    </label>
+                    <select id="plano-form-modelo-pdv" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 font-bold outline-none focus:border-blue-400 text-white text-xs">
+                        <option value="ambos">🔄 Ambos / Flexível (Cliente escolhe na Aba Sistema)</option>
+                        <option value="direto">⚡ Apenas PDV Direto (Recebe e Finaliza no Balcão)</option>
+                        <option value="caixa">📦 Apenas Pré-Venda (Encaminha para o Caixa Central)</option>
+                    </select>
+                    <p class="text-[11px] text-slate-400 mt-1">Define se o plano é focado em caixa direto ou pré-venda com caixa central.</p>
                 </div>
 
                 <div>

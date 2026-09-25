@@ -86,7 +86,8 @@ const PLANOS_PADRAO = [
         usuarios: 'Usuários Ilimitados',
         limiteUsuarios: 999999,
         produtos: 'Produtos Ilimitados',
-        descricao: 'A suíte total definitiva: 100% de todos os módulos liberados, multiusuários ilimitados, IA Gemini irrestrita e suporte VIP 24/7.',
+        modeloPDV: 'ambos',
+        descricao: 'A suíte total definitiva: 100% de todos os módulos liberados, multiusuários ilimitados, fluxo flexível (PDV Direto ou Caixa Central), IA Gemini irrestrita e suporte VIP 24/7.',
         modulos: ['pdv', 'vendas', 'fiscal', 'estoque', 'financeiro', 'caixa', 'compras', 'relatorios', 'agenda', 'site', 'ia', 'marketing', 'suporte'],
         relatoriosPermitidos: [...TODOS_RELATORIOS_SAAS],
         destaque: false,
@@ -101,7 +102,8 @@ const PLANOS_PADRAO = [
         usuarios: 'Até 10 Usuários',
         limiteUsuarios: 10,
         produtos: 'Produtos Ilimitados',
-        descricao: 'Pacote avançado com inteligência artificial generativa comercial, relatórios preditivos e atendimento prioritário.',
+        modeloPDV: 'ambos',
+        descricao: 'Pacote avançado com inteligência artificial generativa comercial, relatórios preditivos, suporte a múltiplos PDVs de balcão e caixas centrais.',
         modulos: ['pdv', 'vendas', 'fiscal', 'estoque', 'financeiro', 'caixa', 'compras', 'relatorios', 'agenda', 'site', 'ia', 'marketing', 'suporte'],
         relatoriosPermitidos: [...TODOS_RELATORIOS_SAAS],
         destaque: false,
@@ -116,7 +118,8 @@ const PLANOS_PADRAO = [
         usuarios: 'Até 5 Usuários',
         limiteUsuarios: 5,
         produtos: 'Produtos Ilimitados',
-        descricao: 'O equilíbrio perfeito: emissão fiscal, gestão financeira completa, DRE, compras XML e catálogo online.',
+        modeloPDV: 'ambos',
+        descricao: 'O equilíbrio perfeito: emissão fiscal, gestão financeira completa, DRE, compras XML, catálogo online e escolha flexível entre PDV Direto ou Pré-venda com Caixa.',
         modulos: ['pdv', 'vendas', 'fiscal', 'estoque', 'financeiro', 'caixa', 'compras', 'relatorios', 'agenda', 'site', 'suporte'],
         relatoriosPermitidos: ['rel_dre', 'rel_raio_x', 'rel_top_produtos', 'rel_top_clientes', 'rel_historico_vendas', 'rel_comissao', 'rel_vendedores', 'rel_curva_abc', 'rel_kardex', 'rel_top_compras', 'rel_top_fornecedores', 'rel_despesas', 'rel_sugestor_compras', 'rel_evolucao_custos'],
         destaque: true,
@@ -131,22 +134,40 @@ const PLANOS_PADRAO = [
         usuarios: 'Até 3 Usuários',
         limiteUsuarios: 3,
         produtos: 'Produtos Ilimitados',
-        descricao: 'Ideal para comércios que precisam emitir notas fiscais eletrônicas com rapidez e segurança tributária.',
+        modeloPDV: 'ambos',
+        descricao: 'Ideal para comércios que precisam emitir notas fiscais eletrônicas com rapidez e segurança tributária, operando com PDV Direto ou Pré-Venda.',
         modulos: ['pdv', 'vendas', 'fiscal', 'estoque', 'caixa', 'suporte'],
         relatoriosPermitidos: ['rel_dre', 'rel_top_produtos', 'rel_historico_vendas', 'rel_comissao'],
         destaque: false,
         ativo: true
     },
     {
+        id: 'plano_balcao_caixa',
+        sistemaId: 'fc_gestao',
+        nome: 'Varejo Balcão (Pré-Venda + Caixa Central)',
+        preco: 99.90,
+        ciclo: 'mensal',
+        usuarios: 'Até 4 Usuários (Vendedores + Caixa)',
+        limiteUsuarios: 4,
+        produtos: 'Produtos Ilimitados',
+        modeloPDV: 'caixa',
+        descricao: 'Novo Modelo de Negócio: vendedores atendem e geram pré-vendas/pedidos no balcão e o cliente efetua o pagamento no Caixa Central.',
+        modulos: ['pdv', 'vendas', 'estoque', 'caixa', 'suporte'],
+        relatoriosPermitidos: ['rel_top_produtos', 'rel_historico_vendas', 'rel_vendedores', 'rel_comissao'],
+        destaque: false,
+        ativo: true
+    },
+    {
         id: 'plano_start',
         sistemaId: 'fc_gestao',
-        nome: 'Start (Frente de Caixa)',
+        nome: 'Start Express (PDV Direto)',
         preco: 69.90,
         ciclo: 'mensal',
         usuarios: 'Até 2 Usuários',
         limiteUsuarios: 2,
         produtos: 'Até 500 Produtos',
-        descricao: 'Perfeito para microempresas e MEIs que precisam de agilidade em vendas de balcão e controle de caixa.',
+        modeloPDV: 'direto',
+        descricao: 'Perfeito para microempresas e MEIs com caixa único de atendimento ágil, recebendo e finalizando a venda diretamente no PDV.',
         modulos: ['pdv', 'vendas', 'estoque', 'caixa', 'suporte'],
         relatoriosPermitidos: ['rel_top_produtos', 'rel_historico_vendas', 'rel_comissao'],
         destaque: false,
@@ -1043,6 +1064,12 @@ function selecionarPlanoNoDossie(planoId) {
             if (chk) chk.checked = rels.includes(r);
         });
 
+        // Atualiza modelo operacional do PDV se definido no plano
+        if (plano.modeloPDV) {
+            const selFluxo = document.getElementById('dossie-ass-fluxo-pdv');
+            if (selFluxo) selFluxo.value = plano.modeloPDV;
+        }
+
         showToast(`Módulos e relatórios padrão do plano "${plano.nome}" aplicados!`, 'info');
     }
 }
@@ -1118,6 +1145,11 @@ async function abrirDossieEmpresa(empresaId) {
     document.getElementById('dossie-ass-valor').value = loja.valorMensalidade !== undefined ? loja.valorMensalidade : 99.00;
     document.getElementById('dossie-ass-vencimento').value = loja.dataVencimento || '';
     document.getElementById('dossie-ass-status').value = status;
+
+    const elFluxoPDV = document.getElementById('dossie-ass-fluxo-pdv');
+    if (elFluxoPDV) {
+        elFluxoPDV.value = loja.fluxoPDV || loja.configEmpresa?.fluxoPDV || (listaPlanos.find(p => p.id === planoId)?.modeloPDV) || 'direto';
+    }
 
     // Carrega Módulos Liberados de Verdade
     const planoObj = listaPlanos.find(p => p.id === planoId) || PLANOS_PADRAO.find(p => p.id === planoId || p.id === 'plano_' + String(planoId).toLowerCase()) || PLANOS_PADRAO[1];
@@ -1319,6 +1351,7 @@ async function salvarAssinaturaPeloDossie(e) {
     const valor = parseFloat(document.getElementById('dossie-ass-valor').value) || 0;
     const venc = document.getElementById('dossie-ass-vencimento').value;
     const status = document.getElementById('dossie-ass-status').value;
+    const fluxoPDV = document.getElementById('dossie-ass-fluxo-pdv')?.value || 'direto';
 
     const listaMods = ['pdv', 'vendas', 'fiscal', 'estoque', 'financeiro', 'caixa', 'compras', 'relatorios', 'agenda', 'site', 'ia', 'marketing', 'suporte'];
     const modulosLiberados = listaMods.filter(m => document.getElementById(`dossie-mod-${m}`)?.checked);
@@ -1336,6 +1369,7 @@ async function salvarAssinaturaPeloDossie(e) {
             valorMensalidade: valor,
             dataVencimento: venc,
             status: status,
+            fluxoPDV: fluxoPDV,
             modulosLiberados: modulosLiberados,
             relatoriosPermitidos: relatoriosPermitidos,
             geminiKey: geminiKey,
@@ -1347,8 +1381,10 @@ async function salvarAssinaturaPeloDossie(e) {
             batch.set(db.collection('empresas').doc(id).collection('configuracoes').doc('config'), {
                 empresa: {
                     plano: plano,
-                    geminiKey: geminiKey
-                }
+                    geminiKey: geminiKey,
+                    fluxoPDV: fluxoPDV
+                },
+                fluxoPDV: fluxoPDV
             }, { merge: true });
         }
 
@@ -1360,6 +1396,7 @@ async function salvarAssinaturaPeloDossie(e) {
         lojaDossieAtual.valorMensalidade = valor;
         lojaDossieAtual.dataVencimento = venc;
         lojaDossieAtual.status = status;
+        lojaDossieAtual.fluxoPDV = fluxoPDV;
         lojaDossieAtual.modulosLiberados = modulosLiberados;
         lojaDossieAtual.relatoriosPermitidos = relatoriosPermitidos;
         lojaDossieAtual.geminiKey = geminiKey;
@@ -2413,6 +2450,13 @@ function renderizarGridPlanosMaster() {
                     </div>
                     <div class="mb-2">
                         <h4 class="text-xl font-extrabold text-white">${plano.nome}</h4>
+                        <div class="mt-1.5">
+                            ${plano.modeloPDV === 'direto' 
+                                ? '<span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20"><i class="fa-solid fa-bolt text-[9px]"></i> Modelo: PDV Direto (Balcão)</span>' 
+                                : (plano.modeloPDV === 'caixa' 
+                                    ? '<span class="inline-flex items-center gap-1 text-[10px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-md border border-blue-500/20"><i class="fa-solid fa-arrow-right-to-bracket text-[9px]"></i> Modelo: Pré-Venda + Caixa Central</span>' 
+                                    : '<span class="inline-flex items-center gap-1 text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20"><i class="fa-solid fa-shuffle text-[9px]"></i> Modelo: Direto ou Pré-Venda</span>')}
+                        </div>
                     </div>
 
                     <p class="text-xs text-slate-400 mb-5 min-h-[32px]">${plano.descricao || ''}</p>
@@ -2564,6 +2608,10 @@ function abrirModalPlano(plano = null) {
     document.getElementById('plano-form-usuarios').value = plano ? (plano.usuarios || '') : '5 Usuários';
     document.getElementById('plano-form-produtos').value = plano ? (plano.produtos || '') : 'Ilimitado';
     document.getElementById('plano-form-desc').value = plano ? (plano.descricao || '') : '';
+    const selModeloPDV = document.getElementById('plano-form-modelo-pdv');
+    if (selModeloPDV) {
+        selModeloPDV.value = plano ? (plano.modeloPDV || 'ambos') : 'ambos';
+    }
     document.getElementById('plano-form-destaque').checked = plano ? Boolean(plano.destaque) : false;
     document.getElementById('plano-form-ativo').checked = plano ? (plano.ativo !== false) : true;
 
@@ -2619,6 +2667,7 @@ async function salvarPlanoMaster(e) {
     const usuarios = document.getElementById('plano-form-usuarios').value.trim();
     const produtos = document.getElementById('plano-form-produtos').value.trim();
     const desc = document.getElementById('plano-form-desc').value.trim();
+    const modeloPDV = document.getElementById('plano-form-modelo-pdv')?.value || 'ambos';
     const destaque = document.getElementById('plano-form-destaque').checked;
     const ativo = document.getElementById('plano-form-ativo').checked;
 
@@ -2655,6 +2704,7 @@ async function salvarPlanoMaster(e) {
         limiteUsuarios: limiteUsuarios,
         produtos: produtos,
         descricao: desc,
+        modeloPDV: modeloPDV,
         modulos: modulos,
         relatoriosPermitidos: relatoriosPermitidos,
         destaque: destaque,
@@ -3050,6 +3100,7 @@ async function cadastrarLojaManual(e) {
         // 3. Documento da empresa
         const planoObj = listaPlanos.find(p => p.id === plano || p.id === 'plano_' + String(plano).toLowerCase()) || PLANOS_PADRAO[1];
         const modsIniciais = planoObj.modulos || ['pdv', 'vendas', 'fiscal', 'estoque', 'financeiro', 'site'];
+        const fluxoInicial = planoObj.modeloPDV || 'direto';
 
         batch.set(db.collection('empresas').doc(empresaId), {
             nomeEmpresa: nome,
@@ -3061,6 +3112,7 @@ async function cadastrarLojaManual(e) {
             valorMensalidade: valor,
             dataVencimento: dataVencStr,
             status: 'ATIVO',
+            fluxoPDV: fluxoInicial,
             emailAcesso: email,
             senhaAcesso: senha,
             modulosLiberados: modsIniciais,
@@ -3087,8 +3139,10 @@ async function cadastrarLojaManual(e) {
                 nome: nome,
                 fantasia: nome,
                 cnpj: cnpj,
-                telefone: wpp
+                telefone: wpp,
+                fluxoPDV: fluxoInicial
             },
+            fluxoPDV: fluxoInicial,
             pdv: { permite_estoque_negativo: false }
         });
         batch.set(db.collection('empresas').doc(empresaId).collection('caixa').doc('caixa_atual'), {
