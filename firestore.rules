@@ -19,9 +19,16 @@ service cloud.firestore {
       allow read, write: if isMaster();
     }
 
-    // Consulta de licenca por sistemas clientes (FC-Gestao, FC-Food, etc.)
+    // Consulta de licenca e auto-cadastro de trial por sistemas clientes (FC-Gestao, FC-Food, etc.)
     match /empresas/{empresaId} {
       allow read: if true;
+      allow create: if request.resource.data.status == 'TRIAL';
+      allow update, delete: if isMaster();
+
+      // Subcolecoes de controle financeiro (ex: faturas_saas)
+      match /{allChildren=**} {
+        allow read, write: if isMaster();
+      }
     }
 
     // Consulta de catalogo de planos e softwares

@@ -264,9 +264,14 @@
                                 </h3>
                                 <p class="text-xs text-slate-400 mt-1">Defina quais módulos cada plano libera. Cada plano é vinculado a um sistema específico com total independência!</p>
                             </div>
-                            <button onclick="abrirModalPlano()" class="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-2 transition-all shadow-lg shadow-blue-500/20 shrink-0">
-                                <i class="fa-solid fa-plus"></i> Novo Plano
-                            </button>
+                            <div class="flex items-center gap-2">
+                                <button type="button" onclick="sincronizarPlanosPadraoComBanco(true)" title="Sincronizar planos padrão com o banco Firestore" class="bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold px-3.5 py-2.5 rounded-xl text-xs flex items-center gap-2 transition-all shrink-0">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i> Sincronizar com Banco
+                                </button>
+                                <button onclick="abrirModalPlano()" class="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-2 transition-all shadow-lg shadow-blue-500/20 shrink-0">
+                                    <i class="fa-solid fa-plus"></i> Novo Plano
+                                </button>
+                            </div>
                         </div>
 
                         <!-- BARRA DE FILTRO POR SISTEMA -->
@@ -515,9 +520,15 @@
                         <p class="text-xs text-slate-400 font-mono mt-0.5" id="dossie-empresa-id">ID: loja_0000</p>
                     </div>
                 </div>
-                <button onclick="fecharModalDossie()" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-colors">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="lojaDossieAtual && renovarRapido30Dias(lojaDossieAtual.id)" title="Aprovar Pagamento PIX e Renovar (+30 dias)" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-extrabold text-xs flex items-center gap-1.5 shadow-md shadow-blue-500/20 transition-all">
+                        <i class="fa-solid fa-calendar-plus text-xs"></i>
+                        <span>+30 Dias (PIX)</span>
+                    </button>
+                    <button onclick="fecharModalDossie()" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-colors">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
             </div>
 
             <!-- NAVEGAÇÃO DE ABAS DO DOSSIÊ -->
@@ -737,7 +748,7 @@
                                 </label>
                                 <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-amber-500/40 transition-colors">
                                     <input type="checkbox" id="dossie-mod-estoque" class="rounded accent-amber-500 scale-110">
-                                    <span class="font-medium">Estoque & Produtos</span>
+                                    <span class="font-medium">Controle de Estoque & Produtos</span>
                                 </label>
                                 <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-amber-500/40 transition-colors">
                                     <input type="checkbox" id="dossie-mod-financeiro" class="rounded accent-amber-500 scale-110">
@@ -745,7 +756,7 @@
                                 </label>
                                 <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-amber-500/40 transition-colors">
                                     <input type="checkbox" id="dossie-mod-caixa" class="rounded accent-amber-500 scale-110">
-                                    <span class="font-medium">Caixa Físico</span>
+                                    <span class="font-medium">Caixa da Loja / Central & Caixas PDV</span>
                                 </label>
                                 <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-amber-500/40 transition-colors">
                                     <input type="checkbox" id="dossie-mod-compras" class="rounded accent-amber-500 scale-110">
@@ -753,7 +764,7 @@
                                 </label>
                                 <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-amber-500/40 transition-colors">
                                     <input type="checkbox" id="dossie-mod-relatorios" class="rounded accent-amber-500 scale-110">
-                                    <span class="font-medium">Relatórios & DRE</span>
+                                    <span class="font-medium">Central de Relatórios Gerenciais</span>
                                 </label>
                                 <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-amber-500/40 transition-colors">
                                     <input type="checkbox" id="dossie-mod-agenda" class="rounded accent-amber-500 scale-110">
@@ -765,7 +776,7 @@
                                 </label>
                                 <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-amber-500/40 transition-colors">
                                     <input type="checkbox" id="dossie-mod-ia" class="rounded accent-amber-500 scale-110">
-                                    <span class="font-medium text-purple-400">Inteligência Artificial (IA)</span>
+                                    <span class="font-medium text-purple-400">Inteligência Artificial (IA Gemini)</span>
                                 </label>
                                 <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-amber-500/40 transition-colors">
                                     <input type="checkbox" id="dossie-mod-suporte" class="rounded accent-amber-500 scale-110">
@@ -794,71 +805,106 @@
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs text-slate-300 pt-1">
-                                <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-indigo-500/40 transition-colors">
-                                    <input type="checkbox" id="dossie-rel-rel_dre" class="rounded accent-indigo-500 scale-110">
-                                    <span class="font-medium flex items-center gap-1.5"><i class="fa-solid fa-table-columns text-indigo-400 w-4 text-center"></i> DRE Gerencial</span>
-                                </label>
-                                <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-indigo-500/40 transition-colors">
-                                    <input type="checkbox" id="dossie-rel-rel_raio_x" class="rounded accent-indigo-500 scale-110">
-                                    <span class="font-medium flex items-center gap-1.5"><i class="fa-solid fa-chart-line text-indigo-400 w-4 text-center"></i> Raio-X Executivo</span>
-                                </label>
-                                <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-indigo-500/40 transition-colors">
-                                    <input type="checkbox" id="dossie-rel-rel_top_produtos" class="rounded accent-indigo-500 scale-110">
-                                    <span class="font-medium flex items-center gap-1.5"><i class="fa-solid fa-ranking-star text-indigo-400 w-4 text-center"></i> Top Produtos</span>
-                                </label>
-                                <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-indigo-500/40 transition-colors">
-                                    <input type="checkbox" id="dossie-rel-rel_top_clientes" class="rounded accent-indigo-500 scale-110">
-                                    <span class="font-medium flex items-center gap-1.5"><i class="fa-solid fa-users text-indigo-400 w-4 text-center"></i> Top Clientes</span>
-                                </label>
-                                <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-indigo-500/40 transition-colors">
-                                    <input type="checkbox" id="dossie-rel-rel_historico_vendas" class="rounded accent-indigo-500 scale-110">
-                                    <span class="font-medium flex items-center gap-1.5"><i class="fa-solid fa-receipt text-indigo-400 w-4 text-center"></i> Histórico Vendas</span>
-                                </label>
-                                <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-indigo-500/40 transition-colors">
-                                    <input type="checkbox" id="dossie-rel-rel_comissao" class="rounded accent-indigo-500 scale-110">
-                                    <span class="font-medium flex items-center gap-1.5"><i class="fa-solid fa-hand-holding-dollar text-indigo-400 w-4 text-center"></i> Comissão Vendedor</span>
-                                </label>
-                                <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-indigo-500/40 transition-colors">
-                                    <input type="checkbox" id="dossie-rel-rel_vendedores" class="rounded accent-indigo-500 scale-110">
-                                    <span class="font-medium flex items-center gap-1.5"><i class="fa-solid fa-user-tie text-indigo-400 w-4 text-center"></i> Desemp. Vendedores</span>
-                                </label>
-                                <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-indigo-500/40 transition-colors">
-                                    <input type="checkbox" id="dossie-rel-rel_curva_abc" class="rounded accent-indigo-500 scale-110">
-                                    <span class="font-medium flex items-center gap-1.5"><i class="fa-solid fa-chart-pie text-indigo-400 w-4 text-center"></i> Curva ABC</span>
-                                </label>
-                                <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-indigo-500/40 transition-colors">
-                                    <input type="checkbox" id="dossie-rel-rel_kardex" class="rounded accent-indigo-500 scale-110">
-                                    <span class="font-medium flex items-center gap-1.5"><i class="fa-solid fa-warehouse text-indigo-400 w-4 text-center"></i> Estoque & Kardex</span>
-                                </label>
-                                <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-indigo-500/40 transition-colors">
-                                    <input type="checkbox" id="dossie-rel-rel_top_compras" class="rounded accent-indigo-500 scale-110">
-                                    <span class="font-medium flex items-center gap-1.5"><i class="fa-solid fa-boxes-stacked text-indigo-400 w-4 text-center"></i> Top Compras</span>
-                                </label>
-                                <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-indigo-500/40 transition-colors">
-                                    <input type="checkbox" id="dossie-rel-rel_top_fornecedores" class="rounded accent-indigo-500 scale-110">
-                                    <span class="font-medium flex items-center gap-1.5"><i class="fa-solid fa-truck text-indigo-400 w-4 text-center"></i> Top Fornecedores</span>
-                                </label>
-                                <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-indigo-500/40 transition-colors">
-                                    <input type="checkbox" id="dossie-rel-rel_despesas" class="rounded accent-indigo-500 scale-110">
-                                    <span class="font-medium flex items-center gap-1.5"><i class="fa-solid fa-money-bill-wave text-indigo-400 w-4 text-center"></i> Análise Despesas</span>
-                                </label>
-                                <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-indigo-500/40 transition-colors">
-                                    <input type="checkbox" id="dossie-rel-rel_sugestor_compras" class="rounded accent-indigo-500 scale-110">
-                                    <span class="font-medium flex items-center gap-1.5"><i class="fa-solid fa-cart-plus text-indigo-400 w-4 text-center"></i> Sugestor Compras</span>
-                                </label>
-                                <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-indigo-500/40 transition-colors">
-                                    <input type="checkbox" id="dossie-rel-rel_evolucao_custos" class="rounded accent-indigo-500 scale-110">
-                                    <span class="font-medium flex items-center gap-1.5"><i class="fa-solid fa-arrow-trend-up text-indigo-400 w-4 text-center"></i> Evolução Custos</span>
-                                </label>
-                                <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-indigo-500/40 transition-colors">
-                                    <input type="checkbox" id="dossie-rel-rel_mapa_calor" class="rounded accent-indigo-500 scale-110">
-                                    <span class="font-medium flex items-center gap-1.5"><i class="fa-solid fa-fire text-indigo-400 w-4 text-center"></i> Mapa de Calor</span>
-                                </label>
-                                <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-purple-500/40 transition-colors">
-                                    <input type="checkbox" id="dossie-rel-rel_ia_assistente" class="rounded accent-purple-500 scale-110">
-                                    <span class="font-medium text-purple-300 flex items-center gap-1.5"><i class="fa-solid fa-robot text-purple-400 w-4 text-center"></i> Relatórios IA</span>
-                                </label>
+                            <div class="space-y-4 pt-1 text-xs text-slate-300">
+                                <!-- Financeiro & Gestão -->
+                                <div>
+                                    <p class="text-[11px] font-extrabold uppercase tracking-wider text-indigo-400 mb-2 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-chart-line text-[12px]"></i> Financeiro & Gestão
+                                    </p>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+                                        <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-indigo-500/40 transition-colors">
+                                            <input type="checkbox" id="dossie-rel-rel_dre" class="rounded accent-indigo-500 scale-110">
+                                            <span class="font-medium flex items-center gap-1.5"><i class="fa-solid fa-table-columns text-indigo-400 w-4 text-center"></i> DRE Gerencial</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-indigo-500/40 transition-colors">
+                                            <input type="checkbox" id="dossie-rel-rel_raio_x" class="rounded accent-indigo-500 scale-110">
+                                            <span class="font-medium flex items-center gap-1.5"><i class="fa-solid fa-chart-line text-indigo-400 w-4 text-center"></i> Raio-X & Break-Even</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-indigo-500/40 transition-colors">
+                                            <input type="checkbox" id="dossie-rel-rel_despesas" class="rounded accent-indigo-500 scale-110">
+                                            <span class="font-medium flex items-center gap-1.5"><i class="fa-solid fa-money-bill-wave text-indigo-400 w-4 text-center"></i> Despesas por Centro Custo</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-indigo-500/40 transition-colors">
+                                            <input type="checkbox" id="dossie-rel-rel_evolucao_custos" class="rounded accent-indigo-500 scale-110">
+                                            <span class="font-medium flex items-center gap-1.5"><i class="fa-solid fa-arrow-trend-up text-indigo-400 w-4 text-center"></i> Evolução de Custos</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Vendas & Clientes -->
+                                <div>
+                                    <p class="text-[11px] font-extrabold uppercase tracking-wider text-emerald-400 mb-2 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-receipt text-[12px]"></i> Vendas & Clientes
+                                    </p>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                                        <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-emerald-500/40 transition-colors">
+                                            <input type="checkbox" id="dossie-rel-rel_top_produtos" class="rounded accent-emerald-500 scale-110">
+                                            <span class="font-medium flex items-center gap-1.5"><i class="fa-solid fa-ranking-star text-emerald-400 w-4 text-center"></i> Top Produtos Vendidos</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-emerald-500/40 transition-colors">
+                                            <input type="checkbox" id="dossie-rel-rel_top_clientes" class="rounded accent-emerald-500 scale-110">
+                                            <span class="font-medium flex items-center gap-1.5"><i class="fa-solid fa-users text-emerald-400 w-4 text-center"></i> Top Clientes (Ranking)</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-emerald-500/40 transition-colors">
+                                            <input type="checkbox" id="dossie-rel-rel_historico_vendas" class="rounded accent-emerald-500 scale-110">
+                                            <span class="font-medium flex items-center gap-1.5"><i class="fa-solid fa-receipt text-emerald-400 w-4 text-center"></i> Histórico Analítico Vendas</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-emerald-500/40 transition-colors">
+                                            <input type="checkbox" id="dossie-rel-rel_comissao" class="rounded accent-emerald-500 scale-110">
+                                            <span class="font-medium flex items-center gap-1.5"><i class="fa-solid fa-hand-holding-dollar text-emerald-400 w-4 text-center"></i> Comissão de Vendedores</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-emerald-500/40 transition-colors">
+                                            <input type="checkbox" id="dossie-rel-rel_vendedores" class="rounded accent-emerald-500 scale-110">
+                                            <span class="font-medium flex items-center gap-1.5"><i class="fa-solid fa-user-tie text-emerald-400 w-4 text-center"></i> Desempenho Vendedores</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-emerald-500/40 transition-colors">
+                                            <input type="checkbox" id="dossie-rel-rel_mapa_calor" class="rounded accent-emerald-500 scale-110">
+                                            <span class="font-medium flex items-center gap-1.5"><i class="fa-solid fa-fire text-emerald-400 w-4 text-center"></i> Mapa de Calor (Horários)</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Estoque & Compras -->
+                                <div>
+                                    <p class="text-[11px] font-extrabold uppercase tracking-wider text-amber-400 mb-2 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-boxes-stacked text-[12px]"></i> Estoque & Compras
+                                    </p>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                                        <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-amber-500/40 transition-colors">
+                                            <input type="checkbox" id="dossie-rel-rel_curva_abc" class="rounded accent-amber-500 scale-110">
+                                            <span class="font-medium flex items-center gap-1.5"><i class="fa-solid fa-chart-pie text-amber-400 w-4 text-center"></i> Curva ABC de Produtos</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-amber-500/40 transition-colors">
+                                            <input type="checkbox" id="dossie-rel-rel_kardex" class="rounded accent-amber-500 scale-110">
+                                            <span class="font-medium flex items-center gap-1.5"><i class="fa-solid fa-warehouse text-amber-400 w-4 text-center"></i> Ficha Kardex (Estoque)</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-amber-500/40 transition-colors">
+                                            <input type="checkbox" id="dossie-rel-rel_top_compras" class="rounded accent-amber-500 scale-110">
+                                            <span class="font-medium flex items-center gap-1.5"><i class="fa-solid fa-boxes-stacked text-amber-400 w-4 text-center"></i> Top Compras por Produto</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-amber-500/40 transition-colors">
+                                            <input type="checkbox" id="dossie-rel-rel_top_fornecedores" class="rounded accent-amber-500 scale-110">
+                                            <span class="font-medium flex items-center gap-1.5"><i class="fa-solid fa-truck text-amber-400 w-4 text-center"></i> Top Fornecedores</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-amber-500/40 transition-colors col-span-1 sm:col-span-2">
+                                            <input type="checkbox" id="dossie-rel-rel_sugestor_compras" class="rounded accent-amber-500 scale-110">
+                                            <span class="font-medium flex items-center gap-1.5"><i class="fa-solid fa-cart-plus text-amber-400 w-4 text-center"></i> Sugestor Inteligente de Reposição</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Inteligência Artificial -->
+                                <div>
+                                    <p class="text-[11px] font-extrabold uppercase tracking-wider text-purple-400 mb-2 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-robot text-[12px]"></i> Inteligência Artificial
+                                    </p>
+                                    <div class="grid grid-cols-1 gap-2.5">
+                                        <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-purple-500/40 transition-colors">
+                                            <input type="checkbox" id="dossie-rel-rel_ia_assistente" class="rounded accent-purple-500 scale-110">
+                                            <span class="font-medium text-purple-300 flex items-center gap-1.5"><i class="fa-solid fa-robot text-purple-400 w-4 text-center"></i> Análise Preditiva & Insights IA (Gemini)</span>
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -1356,13 +1402,13 @@
                             <input type="checkbox" id="mod-vendas" class="rounded accent-blue-500" checked> Vendas & Orçamentos
                         </label>
                         <label class="flex items-center gap-2 p-2 rounded-lg bg-slate-900 border border-slate-800 cursor-pointer hover:border-slate-700">
-                            <input type="checkbox" id="mod-caixa" class="rounded accent-blue-500" checked> Fechamento de Caixa
+                            <input type="checkbox" id="mod-caixa" class="rounded accent-blue-500" checked> Caixa da Loja / Central & Caixas PDV
                         </label>
                         <label class="flex items-center gap-2 p-2 rounded-lg bg-slate-900 border border-slate-800 cursor-pointer hover:border-slate-700">
                             <input type="checkbox" id="mod-fiscal" class="rounded accent-blue-500" checked> Emissor NF-e & NFC-e
                         </label>
                         <label class="flex items-center gap-2 p-2 rounded-lg bg-slate-900 border border-slate-800 cursor-pointer hover:border-slate-700">
-                            <input type="checkbox" id="mod-estoque" class="rounded accent-blue-500" checked> Controle de Estoque
+                            <input type="checkbox" id="mod-estoque" class="rounded accent-blue-500" checked> Controle de Estoque & Produtos
                         </label>
                         <label class="flex items-center gap-2 p-2 rounded-lg bg-slate-900 border border-slate-800 cursor-pointer hover:border-slate-700">
                             <input type="checkbox" id="mod-compras" class="rounded accent-blue-500" checked> Compras & Fornecedores
@@ -1371,7 +1417,7 @@
                             <input type="checkbox" id="mod-financeiro" class="rounded accent-blue-500" checked> Financeiro & Contas
                         </label>
                         <label class="flex items-center gap-2 p-2 rounded-lg bg-slate-900 border border-slate-800 cursor-pointer hover:border-slate-700">
-                            <input type="checkbox" id="mod-relatorios" class="rounded accent-blue-500" checked> Relatórios & DRE
+                            <input type="checkbox" id="mod-relatorios" class="rounded accent-blue-500" checked> Central de Relatórios Gerenciais
                         </label>
                         <label class="flex items-center gap-2 p-2 rounded-lg bg-slate-900 border border-slate-800 cursor-pointer hover:border-slate-700">
                             <input type="checkbox" id="mod-agenda" class="rounded accent-blue-500" checked> Agendamentos / Serviços
@@ -1383,7 +1429,7 @@
                             <input type="checkbox" id="mod-marketing" class="rounded accent-blue-500" checked> Marketing & Disparos
                         </label>
                         <label class="flex items-center gap-2 p-2 rounded-lg bg-slate-900 border border-slate-800 cursor-pointer hover:border-slate-700">
-                            <input type="checkbox" id="mod-ia" class="rounded accent-blue-500" checked> Inteligência Artificial (IA)
+                            <input type="checkbox" id="mod-ia" class="rounded accent-blue-500" checked> Inteligência Artificial (IA Gemini)
                         </label>
                         <label class="flex items-center gap-2 p-2 rounded-lg bg-slate-900 border border-slate-800 cursor-pointer hover:border-slate-700 col-span-2">
                             <input type="checkbox" id="mod-suporte" class="rounded accent-blue-500" checked> Suporte Prioritário VIP
@@ -1400,55 +1446,90 @@
                             <button type="button" onclick="marcarTodosRelatoriosPlano(false)" class="text-[10px] text-slate-400 hover:underline">Nenhum</button>
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-1.5 text-[11px] text-slate-300 max-h-48 overflow-y-auto custom-scrollbar p-2 bg-slate-900/60 rounded-xl border border-slate-800">
-                        <label class="flex items-center gap-2 p-1.5 rounded hover:bg-slate-800 cursor-pointer">
-                            <input type="checkbox" id="rel-rel_dre" class="rounded accent-indigo-500" checked> DRE Gerencial
-                        </label>
-                        <label class="flex items-center gap-2 p-1.5 rounded hover:bg-slate-800 cursor-pointer">
-                            <input type="checkbox" id="rel-rel_raio_x" class="rounded accent-indigo-500" checked> Raio-X & Break-Even
-                        </label>
-                        <label class="flex items-center gap-2 p-1.5 rounded hover:bg-slate-800 cursor-pointer">
-                            <input type="checkbox" id="rel-rel_top_produtos" class="rounded accent-indigo-500" checked> Top Produtos Vendidos
-                        </label>
-                        <label class="flex items-center gap-2 p-1.5 rounded hover:bg-slate-800 cursor-pointer">
-                            <input type="checkbox" id="rel-rel_top_clientes" class="rounded accent-indigo-500" checked> Top Clientes
-                        </label>
-                        <label class="flex items-center gap-2 p-1.5 rounded hover:bg-slate-800 cursor-pointer">
-                            <input type="checkbox" id="rel-rel_historico_vendas" class="rounded accent-indigo-500" checked> Histórico de Vendas
-                        </label>
-                        <label class="flex items-center gap-2 p-1.5 rounded hover:bg-slate-800 cursor-pointer">
-                            <input type="checkbox" id="rel-rel_comissao" class="rounded accent-indigo-500" checked> Comissão de Vendedores
-                        </label>
-                        <label class="flex items-center gap-2 p-1.5 rounded hover:bg-slate-800 cursor-pointer">
-                            <input type="checkbox" id="rel-rel_vendedores" class="rounded accent-indigo-500" checked> Desempenho Vendedores
-                        </label>
-                        <label class="flex items-center gap-2 p-1.5 rounded hover:bg-slate-800 cursor-pointer">
-                            <input type="checkbox" id="rel-rel_curva_abc" class="rounded accent-indigo-500" checked> Curva ABC Produtos
-                        </label>
-                        <label class="flex items-center gap-2 p-1.5 rounded hover:bg-slate-800 cursor-pointer">
-                            <input type="checkbox" id="rel-rel_kardex" class="rounded accent-indigo-500" checked> Kardex & Estoque
-                        </label>
-                        <label class="flex items-center gap-2 p-1.5 rounded hover:bg-slate-800 cursor-pointer">
-                            <input type="checkbox" id="rel-rel_top_compras" class="rounded accent-indigo-500" checked> Compras por Produto
-                        </label>
-                        <label class="flex items-center gap-2 p-1.5 rounded hover:bg-slate-800 cursor-pointer">
-                            <input type="checkbox" id="rel-rel_top_fornecedores" class="rounded accent-indigo-500" checked> Top Fornecedores
-                        </label>
-                        <label class="flex items-center gap-2 p-1.5 rounded hover:bg-slate-800 cursor-pointer">
-                            <input type="checkbox" id="rel-rel_despesas" class="rounded accent-indigo-500" checked> Despesas & Custos
-                        </label>
-                        <label class="flex items-center gap-2 p-1.5 rounded hover:bg-slate-800 cursor-pointer">
-                            <input type="checkbox" id="rel-rel_sugestor_compras" class="rounded accent-indigo-500" checked> Sugestor Compras
-                        </label>
-                        <label class="flex items-center gap-2 p-1.5 rounded hover:bg-slate-800 cursor-pointer">
-                            <input type="checkbox" id="rel-rel_evolucao_custos" class="rounded accent-indigo-500" checked> Evolução Custos
-                        </label>
-                        <label class="flex items-center gap-2 p-1.5 rounded hover:bg-slate-800 cursor-pointer">
-                            <input type="checkbox" id="rel-rel_mapa_calor" class="rounded accent-indigo-500" checked> Mapa de Calor Vendas
-                        </label>
-                        <label class="flex items-center gap-2 p-1.5 rounded hover:bg-slate-800 cursor-pointer">
-                            <input type="checkbox" id="rel-rel_ia_assistente" class="rounded accent-indigo-500" checked> Assistente IA
-                        </label>
+                    <div class="space-y-3 max-h-56 overflow-y-auto custom-scrollbar p-2.5 bg-slate-900/60 rounded-xl border border-slate-800 text-[11px] text-slate-300">
+                        <!-- Categoria: Financeiro & Gestão -->
+                        <div>
+                            <p class="text-[10px] font-extrabold uppercase tracking-wider text-indigo-400 mb-1.5 flex items-center gap-1.5">
+                                <i class="fa-solid fa-chart-line text-[11px]"></i> Financeiro & Gestão
+                            </p>
+                            <div class="grid grid-cols-2 gap-1.5">
+                                <label class="flex items-center gap-2 p-1.5 rounded hover:bg-slate-800 cursor-pointer">
+                                    <input type="checkbox" id="rel-rel_dre" class="rounded accent-indigo-500" checked> DRE Gerencial
+                                </label>
+                                <label class="flex items-center gap-2 p-1.5 rounded hover:bg-slate-800 cursor-pointer">
+                                    <input type="checkbox" id="rel-rel_raio_x" class="rounded accent-indigo-500" checked> Raio-X & Ponto Equilíbrio
+                                </label>
+                                <label class="flex items-center gap-2 p-1.5 rounded hover:bg-slate-800 cursor-pointer">
+                                    <input type="checkbox" id="rel-rel_despesas" class="rounded accent-indigo-500" checked> Despesas por Centro Custo
+                                </label>
+                                <label class="flex items-center gap-2 p-1.5 rounded hover:bg-slate-800 cursor-pointer">
+                                    <input type="checkbox" id="rel-rel_evolucao_custos" class="rounded accent-indigo-500" checked> Evolução de Custos
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Categoria: Vendas & Clientes -->
+                        <div>
+                            <p class="text-[10px] font-extrabold uppercase tracking-wider text-emerald-400 mb-1.5 flex items-center gap-1.5">
+                                <i class="fa-solid fa-receipt text-[11px]"></i> Vendas & Clientes
+                            </p>
+                            <div class="grid grid-cols-2 gap-1.5">
+                                <label class="flex items-center gap-2 p-1.5 rounded hover:bg-slate-800 cursor-pointer">
+                                    <input type="checkbox" id="rel-rel_top_produtos" class="rounded accent-indigo-500" checked> Top Produtos Vendidos
+                                </label>
+                                <label class="flex items-center gap-2 p-1.5 rounded hover:bg-slate-800 cursor-pointer">
+                                    <input type="checkbox" id="rel-rel_top_clientes" class="rounded accent-indigo-500" checked> Top Clientes (Ranking)
+                                </label>
+                                <label class="flex items-center gap-2 p-1.5 rounded hover:bg-slate-800 cursor-pointer">
+                                    <input type="checkbox" id="rel-rel_historico_vendas" class="rounded accent-indigo-500" checked> Histórico de Vendas
+                                </label>
+                                <label class="flex items-center gap-2 p-1.5 rounded hover:bg-slate-800 cursor-pointer">
+                                    <input type="checkbox" id="rel-rel_comissao" class="rounded accent-indigo-500" checked> Comissão Vendedores
+                                </label>
+                                <label class="flex items-center gap-2 p-1.5 rounded hover:bg-slate-800 cursor-pointer">
+                                    <input type="checkbox" id="rel-rel_vendedores" class="rounded accent-indigo-500" checked> Desempenho Vendedores
+                                </label>
+                                <label class="flex items-center gap-2 p-1.5 rounded hover:bg-slate-800 cursor-pointer">
+                                    <input type="checkbox" id="rel-rel_mapa_calor" class="rounded accent-indigo-500" checked> Mapa de Calor (Horários)
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Categoria: Estoque & Compras -->
+                        <div>
+                            <p class="text-[10px] font-extrabold uppercase tracking-wider text-amber-400 mb-1.5 flex items-center gap-1.5">
+                                <i class="fa-solid fa-boxes-stacked text-[11px]"></i> Estoque & Compras
+                            </p>
+                            <div class="grid grid-cols-2 gap-1.5">
+                                <label class="flex items-center gap-2 p-1.5 rounded hover:bg-slate-800 cursor-pointer">
+                                    <input type="checkbox" id="rel-rel_curva_abc" class="rounded accent-indigo-500" checked> Curva ABC de Produtos
+                                </label>
+                                <label class="flex items-center gap-2 p-1.5 rounded hover:bg-slate-800 cursor-pointer">
+                                    <input type="checkbox" id="rel-rel_kardex" class="rounded accent-indigo-500" checked> Ficha Kardex (Estoque)
+                                </label>
+                                <label class="flex items-center gap-2 p-1.5 rounded hover:bg-slate-800 cursor-pointer">
+                                    <input type="checkbox" id="rel-rel_top_compras" class="rounded accent-indigo-500" checked> Top Compras por Produto
+                                </label>
+                                <label class="flex items-center gap-2 p-1.5 rounded hover:bg-slate-800 cursor-pointer">
+                                    <input type="checkbox" id="rel-rel_top_fornecedores" class="rounded accent-indigo-500" checked> Top Fornecedores
+                                </label>
+                                <label class="flex items-center gap-2 p-1.5 rounded hover:bg-slate-800 cursor-pointer col-span-2">
+                                    <input type="checkbox" id="rel-rel_sugestor_compras" class="rounded accent-indigo-500" checked> Sugestor Inteligente de Reposição
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Categoria: Inteligência Artificial -->
+                        <div>
+                            <p class="text-[10px] font-extrabold uppercase tracking-wider text-purple-400 mb-1.5 flex items-center gap-1.5">
+                                <i class="fa-solid fa-robot text-[11px]"></i> Inteligência Artificial
+                            </p>
+                            <div class="grid grid-cols-1 gap-1.5">
+                                <label class="flex items-center gap-2 p-1.5 rounded hover:bg-slate-800 cursor-pointer text-purple-300">
+                                    <input type="checkbox" id="rel-rel_ia_assistente" class="rounded accent-purple-500" checked> Análise Preditiva & Insights IA (Gemini)
+                                </label>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

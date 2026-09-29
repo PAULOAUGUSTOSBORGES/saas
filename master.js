@@ -69,12 +69,30 @@ const SISTEMAS_PADRAO = [
     }
 ];
 
-const TODOS_RELATORIOS_SAAS = [
-    'rel_dre', 'rel_raio_x', 'rel_top_produtos', 'rel_top_clientes', 'rel_historico_vendas',
-    'rel_comissao', 'rel_vendedores', 'rel_curva_abc', 'rel_kardex', 'rel_top_compras',
-    'rel_top_fornecedores', 'rel_despesas', 'rel_sugestor_compras', 'rel_evolucao_custos',
-    'rel_mapa_calor', 'rel_ia_assistente'
+const CATALOGO_RELATORIOS_SAAS = [
+    { id: 'rel_dre',               nome: 'DRE - Demonstrativo de Resultado',       icone: 'fa-table-columns',    categoria: 'Financeiro & Gestão' },
+    { id: 'rel_raio_x',            nome: 'Raio-X Executivo & Ponto de Equilíbrio',  icone: 'fa-chart-line',       categoria: 'Financeiro & Gestão' },
+    { id: 'rel_despesas',          nome: 'Despesas por Centro de Custo',           icone: 'fa-money-bill-wave',  categoria: 'Financeiro & Gestão' },
+    { id: 'rel_evolucao_custos',   nome: 'Evolução de Custos & Inflação',          icone: 'fa-arrow-trend-up',   categoria: 'Financeiro & Gestão' },
+
+    { id: 'rel_top_produtos',      nome: 'Top Produtos Mais Vendidos',             icone: 'fa-ranking-star',     categoria: 'Vendas & Clientes' },
+    { id: 'rel_top_clientes',      nome: 'Top Clientes (Ranking)',                 icone: 'fa-users',            categoria: 'Vendas & Clientes' },
+    { id: 'rel_historico_vendas',  nome: 'Histórico Analítico de Vendas',          icone: 'fa-receipt',          categoria: 'Vendas & Clientes' },
+    { id: 'rel_comissao',          nome: 'Comissão Detalhada de Vendedores',       icone: 'fa-hand-holding-dollar', categoria: 'Vendas & Clientes' },
+    { id: 'rel_vendedores',        nome: 'Desempenho & Metas de Vendedores',       icone: 'fa-user-tie',         categoria: 'Vendas & Clientes' },
+    { id: 'rel_mapa_calor',        nome: 'Mapa de Calor de Vendas (Horários)',     icone: 'fa-fire',             categoria: 'Vendas & Clientes' },
+
+    { id: 'rel_curva_abc',         nome: 'Curva ABC de Produtos & Lucro',          icone: 'fa-chart-pie',        categoria: 'Estoque & Compras' },
+    { id: 'rel_kardex',            nome: 'Ficha Kardex (Movimentação de Estoque)', icone: 'fa-warehouse',       categoria: 'Estoque & Compras' },
+    { id: 'rel_top_compras',       nome: 'Top Compras por Produto & Valor',        icone: 'fa-boxes-stacked',    categoria: 'Estoque & Compras' },
+    { id: 'rel_top_fornecedores',   nome: 'Top Fornecedores & Prazos',              icone: 'fa-truck',            categoria: 'Estoque & Compras' },
+    { id: 'rel_sugestor_compras',  nome: 'Sugestor Inteligente de Reposição',      icone: 'fa-cart-plus',        categoria: 'Estoque & Compras' },
+
+    { id: 'rel_ia_assistente',     nome: 'Análise Preditiva & Insights IA (Gemini)', icone: 'fa-robot',          categoria: 'Inteligência Artificial' }
 ];
+
+const TODOS_RELATORIOS_SAAS = CATALOGO_RELATORIOS_SAAS.map(r => r.id);
+window.CATALOGO_RELATORIOS_SAAS = CATALOGO_RELATORIOS_SAAS;
 
 const PLANOS_PADRAO = [
     {
@@ -375,6 +393,9 @@ function navegarMaster(view) {
         if (elTitulo) elTitulo.innerHTML = '<i class="fa-solid fa-layer-group text-blue-400"></i> Catálogo de Planos do SaaS';
         if (elAcoes) {
             elAcoes.innerHTML = `
+                <button onclick="sincronizarPlanosPadraoComBanco(true)" title="Forçar sincronização de todos os planos com o banco" class="bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Sincronizar com Banco
+                </button>
                 <button onclick="carregarPlanosMaster()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3.5 py-2 rounded-xl text-xs font-bold transition-all border border-slate-700 flex items-center gap-2">
                     <i class="fa-solid fa-arrows-rotate"></i> Atualizar
                 </button>
@@ -737,6 +758,9 @@ function renderizarTabelaLojasMaster() {
                 </td>
                 <td class="py-4 px-4 text-right">
                     <div class="flex items-center justify-end gap-1.5">
+                        <button onclick="renovarRapido30Dias('${loja.id}')" title="Aprovar Pagamento PIX e Renovar (+30 dias)" class="w-8 h-8 rounded-xl bg-blue-500/15 hover:bg-blue-500/30 text-blue-400 flex items-center justify-center transition-all border border-blue-500/20">
+                            <i class="fa-solid fa-calendar-plus text-sm"></i>
+                        </button>
                         <button onclick="abrirDossieEmpresa('${loja.id}')" title="Dossiê / Ficha Completa da Empresa" class="w-8 h-8 rounded-xl bg-amber-500/15 hover:bg-amber-500/30 text-amber-400 flex items-center justify-center transition-all border border-amber-500/20">
                             <i class="fa-solid fa-id-card text-sm"></i>
                         </button>
@@ -850,6 +874,127 @@ async function alternarBloqueioMaster(empresaId, novoStatus) {
     }
 }
 window.alternarBloqueioMaster = alternarBloqueioMaster;
+
+// Renovação Rápida de Mensalidade (+30 Dias com 1 clique)
+async function renovarRapido30Dias(empresaId) {
+    const loja = listaLojas.find(l => l.id === empresaId);
+    if (!loja) return;
+
+    const nome = loja.nomeEmpresa || loja.nome || 'Loja';
+    const valor = Number(loja.valorMensalidade || 99.00);
+
+    // Calcula novo vencimento (+30 dias a partir do vencimento atual se futuro, ou a partir de hoje)
+    let base = new Date();
+    if (loja.dataVencimento) {
+        const parts = loja.dataVencimento.split('T')[0].split('-');
+        if (parts.length === 3) {
+            const dataVencAtual = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+            if (dataVencAtual.getTime() > base.getTime()) {
+                base = dataVencAtual;
+            }
+        }
+    }
+    const novoVencDate = new Date(base.getTime() + (30 * 24 * 60 * 60 * 1000));
+    const novoVencIso = novoVencDate.toISOString().split('T')[0];
+    const hojeIso = new Date().toISOString().split('T')[0];
+
+    const confirmar = confirm(
+        `⚡ CONFIRMAÇÃO DE PAGAMENTO & RENOVAÇÃO RÁPIDA\n\n` +
+        `🏢 Loja: ${nome}\n` +
+        `💰 Valor: ${valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}\n` +
+        `📅 Data do Pagamento: ${formatarDataBr(hojeIso)}\n` +
+        `🗓️ Novo Vencimento: ${formatarDataBr(novoVencIso)} (+30 dias)\n` +
+        `🟢 Status: ATIVO\n\n` +
+        `Deseja confirmar o recebimento e renovar o acesso agora?`
+    );
+    if (!confirmar) return;
+
+    try {
+        const db = firebase.firestore();
+        const batch = db.batch();
+
+        // 1. Registra na subcoleção de faturas do SaaS Master
+        const faturaRef = db.collection('empresas').doc(empresaId).collection('faturas_saas').doc();
+        batch.set(faturaRef, {
+            valor: valor,
+            metodo: 'PIX',
+            dataPagamento: hojeIso,
+            novoVencimento: novoVencIso,
+            obs: 'Renovação rápida +30 dias via Painel Master',
+            criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        // 2. Atualiza a empresa no banco central do SaaS Master (fcgestao-testes)
+        batch.set(db.collection('empresas').doc(empresaId), {
+            status: 'ATIVO',
+            dataVencimento: novoVencIso,
+            ultimoPagamentoData: hojeIso,
+            ultimoPagamentoValor: valor,
+            ultimaAtualizacaoMaster: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
+        await batch.commit();
+
+        // 3. Sincroniza também no banco de produção da loja (lojafc-a31f9)
+        if (window.LOJA_PRODUCAO_CONFIG) {
+            try {
+                let prodApp = firebase.apps.find(a => a.name === 'lojaProdMasterApp');
+                if (!prodApp) prodApp = firebase.initializeApp(window.LOJA_PRODUCAO_CONFIG, 'lojaProdMasterApp');
+                await prodApp.firestore().collection('empresas').doc(empresaId).set({
+                    status: 'ATIVO',
+                    dataVencimento: novoVencIso,
+                    ultimoPagamentoData: hojeIso,
+                    ultimoPagamentoValor: valor,
+                    ultimaAtualizacaoMaster: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                console.log('✅ Renovação sincronizada no banco de produção da loja!');
+            } catch(eProd) {
+                console.warn('Aviso ao sincronizar renovação na produção:', eProd.message);
+            }
+        }
+
+        // Atualiza objetos em memória
+        loja.status = 'ATIVO';
+        loja.dataVencimento = novoVencIso;
+        loja.ultimoPagamentoData = hojeIso;
+        loja.ultimoPagamentoValor = valor;
+
+        if (typeof lojaDossieAtual !== 'undefined' && lojaDossieAtual && lojaDossieAtual.id === empresaId) {
+            lojaDossieAtual.status = 'ATIVO';
+            lojaDossieAtual.dataVencimento = novoVencIso;
+            const elVenc = document.getElementById('dossie-ass-vencimento');
+            if (elVenc) elVenc.value = novoVencIso;
+            const elStatus = document.getElementById('dossie-ass-status');
+            if (elStatus) elStatus.value = 'ATIVO';
+            const elDisp = document.getElementById('dossie-fatura-venc-display');
+            if (elDisp) elDisp.innerText = formatarDataBr(novoVencIso);
+            const elBadge = document.getElementById('dossie-fatura-status-badge');
+            if (elBadge) elBadge.innerText = 'ATIVO (Renovado)';
+            await carregarFaturasDossie(empresaId);
+        }
+
+        atualizarKPIsMaster();
+        renderizarTabelaLojasMaster();
+        showToast(`✅ Pagamento confirmado! ${nome} renovada até ${formatarDataBr(novoVencIso)}.`, 'success');
+
+        // Copia recibo para colar no WhatsApp
+        const reciboTxt = `*COMPROVANTE DE PAGAMENTO DE MENSALIDADE*\n\n` +
+            `🏢 *Empresa:* ${nome}\n` +
+            `💰 *Valor Recebido:* ${valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}\n` +
+            `💳 *Forma de Pgto:* PIX\n` +
+            `📅 *Data do Recebimento:* ${formatarDataBr(hojeIso)}\n` +
+            `🗓️ *Novo Vencimento:* ${formatarDataBr(novoVencIso)}\n` +
+            `🟢 *Status:* Acesso 100% Ativo e Liberado\n\n` +
+            `Agradecemos pela parceria! Qualquer dúvida estamos à disposição.`;
+
+        copiarTexto(reciboTxt, 'Recibo copiado para enviar no WhatsApp da loja!');
+    } catch (err) {
+        console.error('Erro na renovação rápida:', err);
+        showToast('Erro ao renovar loja: ' + err.message, 'error');
+    }
+}
+window.renovarRapido30Dias = renovarRapido30Dias;
+
 
 // ==========================================
 // MÓDULO 2: DOSSIÊ COMPLETO DA EMPRESA & GESTÃO DE ACESSO
@@ -998,18 +1143,17 @@ async function confirmarRedefinirSenhaMaster(e) {
             }
         }
 
-        // 2. Salva a nova senha na collection empresas/{empresaId}
+        // 2. Salva o registro de auditoria na collection empresas/{empresaId}
         await firebase.firestore().collection('empresas').doc(empresaId).set({
-            senhaAcesso: novaSenha,
             ultimaAlteracaoSenha: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
 
-        // 3. Atualiza na memória
-        loja.senhaAcesso = novaSenha;
+        // 3. Atualiza indicação na memória
+        loja.senhaAcesso = '(Redefinida)';
         if (lojaDossieAtual && lojaDossieAtual.id === empresaId) {
-            lojaDossieAtual.senhaAcesso = novaSenha;
+            lojaDossieAtual.senhaAcesso = '(Redefinida)';
             const credSenha = document.getElementById('dossie-cred-senha');
-            if (credSenha && dossieSenhaVisivel) credSenha.innerText = novaSenha;
+            if (credSenha && dossieSenhaVisivel) credSenha.innerText = '(Redefinida no Auth)';
         }
 
         fecharModalRedefinirSenha();
@@ -1709,17 +1853,7 @@ async function carregarUsuariosDossie(empresaId) {
                     prodApp = firebase.initializeApp(window.LOJA_PRODUCAO_CONFIG, 'lojaProdMasterApp');
                 }
 
-                if (!prodApp.auth().currentUser) {
-                    try {
-                        await prodApp.auth().signInWithEmailAndPassword('fabricadecoresgoiania@gmail.com', '123456');
-                    } catch(authE1) {
-                        try {
-                            await prodApp.auth().signInWithEmailAndPassword('paulo@gmail.com', '123456');
-                        } catch(authE2) {}
-                    }
-                }
-
-                if (prodApp.auth().currentUser) {
+                try {
                     const prodSnap = await prodApp.firestore().collection('empresas').doc(empresaId).collection('funcionarios').get();
                     prodSnap.docs.forEach(d => {
                         const data = d.data();
@@ -1729,6 +1863,8 @@ async function carregarUsuariosDossie(empresaId) {
                             firebase.firestore().collection('empresas').doc(empresaId).collection('funcionarios').doc(d.id).set(data, { merge: true }).catch(() => {});
                         }
                     });
+                } catch(prodErr) {
+                    console.warn("Consulta cruzada à base de produção requer sessão autorizada:", prodErr.message);
                 }
             } catch (e2) {
                 console.warn("[Dossiê Equipe] Aviso ao consultar banco de produção:", e2.message);
@@ -2299,9 +2435,18 @@ async function carregarPlanosMaster() {
             listaPlanos = snap.docs.map(d => ({ id: d.id, ...d.data(), sistemaId: d.data().sistemaId || 'fc_gestao' }));
             // Garante que os novos planos padrão estejam disponíveis caso a collection contenha apenas os antigos
             PLANOS_PADRAO.forEach(p => {
-                if (!listaPlanos.some(x => x.id === p.id)) {
+                const existenteIdx = listaPlanos.findIndex(x => x.id === p.id);
+                if (existenteIdx === -1) {
                     listaPlanos.push(p);
                     firebase.firestore().collection('planos_saas').doc(p.id).set(p).catch(() => {});
+                } else {
+                    const docExistente = listaPlanos[existenteIdx];
+                    // Atualiza em background se faltar modeloPDV ou sistemaId
+                    if (!docExistente.modeloPDV || !docExistente.sistemaId) {
+                        const atualizado = { ...p, ...docExistente, modeloPDV: docExistente.modeloPDV || p.modeloPDV, sistemaId: docExistente.sistemaId || p.sistemaId };
+                        listaPlanos[existenteIdx] = atualizado;
+                        firebase.firestore().collection('planos_saas').doc(p.id).set({ modeloPDV: p.modeloPDV, sistemaId: p.sistemaId }, { merge: true }).catch(() => {});
+                    }
                 }
             });
         }
@@ -2323,6 +2468,31 @@ async function carregarPlanosMaster() {
     }
 }
 window.carregarPlanosMaster = carregarPlanosMaster;
+
+// Força sincronização de todos os planos padrão com o Firestore (upsert)
+async function sincronizarPlanosPadraoComBanco(forcar = true) {
+    try {
+        showToast('Sincronizando catálogo de planos com o banco...', 'info');
+        const db = firebase.firestore();
+        const batch = db.batch();
+
+        PLANOS_PADRAO.forEach(p => {
+            const ref = db.collection('planos_saas').doc(p.id);
+            batch.set(ref, {
+                ...p,
+                ultimaAtualizacao: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+        });
+
+        await batch.commit();
+        showToast('Catálogo de planos sincronizado com o banco!', 'success');
+        await carregarPlanosMaster();
+    } catch (e) {
+        console.error('Erro ao sincronizar planos padrão:', e);
+        showToast('Erro ao sincronizar planos: ' + e.message, 'error');
+    }
+}
+window.sincronizarPlanosPadraoComBanco = sincronizarPlanosPadraoComBanco;
 
 function popularFiltroSistemasPlanos() {
     const sel = document.getElementById('filtro-plano-sistema');
@@ -2403,15 +2573,15 @@ function renderizarGridPlanosMaster() {
         pdv: 'Frente de Caixa (PDV)',
         vendas: 'Vendas & Orçamentos',
         fiscal: 'Emissor NF-e / NFC-e',
-        estoque: 'Controle de Estoque & Kardex',
+        estoque: 'Controle de Estoque & Produtos',
         financeiro: 'Financeiro & Fluxo de Caixa',
-        caixa: 'Caixa Físico',
+        caixa: 'Caixa da Loja / Central & Caixas PDV',
         compras: 'Compras & XML',
-        relatorios: 'Relatórios & DRE',
+        relatorios: 'Central de Relatórios Gerenciais',
         agenda: 'Agenda & Tarefas',
         site: 'Loja / Catálogo Online',
         marketing: 'Marketing & Disparos',
-        ia: 'Relatórios IA Gemini',
+        ia: 'Inteligência Artificial (IA Gemini Comercial)',
         suporte: 'Suporte WhatsApp VIP'
     };
 
@@ -2455,7 +2625,7 @@ function renderizarGridPlanosMaster() {
                                 ? '<span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20"><i class="fa-solid fa-bolt text-[9px]"></i> Modelo: PDV Direto (Balcão)</span>' 
                                 : (plano.modeloPDV === 'caixa' 
                                     ? '<span class="inline-flex items-center gap-1 text-[10px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-md border border-blue-500/20"><i class="fa-solid fa-arrow-right-to-bracket text-[9px]"></i> Modelo: Pré-Venda + Caixa Central</span>' 
-                                    : '<span class="inline-flex items-center gap-1 text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20"><i class="fa-solid fa-shuffle text-[9px]"></i> Modelo: Direto ou Pré-Venda</span>')}
+                                    : '<span class="inline-flex items-center gap-1 text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20"><i class="fa-solid fa-shuffle text-[9px]"></i> Modelo: Flexível (Direto ou Pré-Venda)</span>')}
                         </div>
                     </div>
 
@@ -2480,10 +2650,31 @@ function renderizarGridPlanosMaster() {
                         <ul class="space-y-1.5 text-xs text-slate-300">
                             ${Object.keys(nomesModulos).map(modKey => {
                                 const tem = mods.includes(modKey);
+                                let rotuloModulo = nomesModulos[modKey];
+
+                                // Escreve o modelo exato de PDV e Caixa no card do plano
+                                if (modKey === 'pdv') {
+                                    if (plano.modeloPDV === 'caixa') {
+                                        rotuloModulo = 'Frente de Caixa (Pré-Venda Balcão)';
+                                    } else if (plano.modeloPDV === 'direto') {
+                                        rotuloModulo = 'Frente de Caixa (PDV Direto / Balcão)';
+                                    } else {
+                                        rotuloModulo = 'Frente de Caixa (PDV Flexível: Direto ou Pré-Venda)';
+                                    }
+                                } else if (modKey === 'caixa') {
+                                    if (plano.modeloPDV === 'caixa') {
+                                        rotuloModulo = 'Caixa da Loja / Caixa Central (Liquidação & Fechamento Cego)';
+                                    } else if (plano.modeloPDV === 'direto') {
+                                        rotuloModulo = 'Caixa do Balcão / Operador (Abertura, Suprimento & Sangria)';
+                                    } else {
+                                        rotuloModulo = 'Caixa Central da Loja & Caixas do PDV';
+                                    }
+                                }
+
                                 return `
                                     <li class="flex items-center gap-2 ${tem ? 'text-slate-200' : 'text-slate-600 line-through'}">
-                                        <i class="fa-solid ${tem ? 'fa-check text-emerald-400' : 'fa-xmark text-slate-600'} text-xs w-4 text-center"></i>
-                                        ${nomesModulos[modKey]}
+                                        <i class="fa-solid ${tem ? 'fa-check text-emerald-400' : 'fa-xmark text-slate-600'} text-xs w-4 text-center shrink-0"></i>
+                                        <span>${rotuloModulo}</span>
                                     </li>
                                 `;
                             }).join('')}
@@ -2492,14 +2683,31 @@ function renderizarGridPlanosMaster() {
 
                     <div class="pt-3 border-t border-slate-800 space-y-2">
                         <div class="flex items-center justify-between">
-                            <p class="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Relatórios Disponíveis:</p>
+                            <p class="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Relatórios Inclusos:</p>
                             <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${(plano.relatoriosPermitidos || TODOS_RELATORIOS_SAAS).length === TODOS_RELATORIOS_SAAS.length ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' : 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/30'}">${(plano.relatoriosPermitidos || TODOS_RELATORIOS_SAAS).length} de ${TODOS_RELATORIOS_SAAS.length}</span>
                         </div>
-                        <p class="text-[11px] text-slate-400 leading-snug">
-                            ${(plano.relatoriosPermitidos || TODOS_RELATORIOS_SAAS).length === TODOS_RELATORIOS_SAAS.length 
-                                ? '<span class="text-emerald-400 font-semibold flex items-center gap-1"><i class="fa-solid fa-check-double text-xs"></i>Todos os 16 relatórios inclusos</span>' 
-                                : `<span class="text-slate-300 font-medium">${(plano.relatoriosPermitidos || TODOS_RELATORIOS_SAAS).length} relatórios gerenciais inclusos</span>`}
-                        </p>
+                        ${(plano.relatoriosPermitidos || TODOS_RELATORIOS_SAAS).length === TODOS_RELATORIOS_SAAS.length ? `
+                            <p class="text-[11px] text-emerald-400 font-semibold flex items-center gap-1.5">
+                                <i class="fa-solid fa-check-double text-xs"></i> Todos os 16 relatórios gerenciais inclusos
+                            </p>
+                            <p class="text-[10px] text-slate-400 leading-relaxed">
+                                DRE Gerencial, Raio-X, Curva ABC, Ficha Kardex, IA Preditiva, Despesas, Comissões e mais.
+                            </p>
+                        ` : `
+                            <ul class="space-y-1.5 text-[11px] text-slate-300">
+                                ${(plano.relatoriosPermitidos || []).map(rId => {
+                                    const relObj = CATALOGO_RELATORIOS_SAAS.find(x => x.id === rId);
+                                    const nomeRel = relObj ? relObj.nome : rId;
+                                    const iconeRel = relObj ? relObj.icone : 'fa-chart-pie';
+                                    return `
+                                        <li class="flex items-center gap-1.5 text-slate-300">
+                                            <i class="fa-solid ${iconeRel} text-[10px] text-indigo-400 w-3.5 text-center shrink-0"></i>
+                                            <span class="truncate">${nomeRel}</span>
+                                        </li>
+                                    `;
+                                }).join('')}
+                            </ul>
+                        `}
                     </div>
                 </div>
 
@@ -3114,7 +3322,6 @@ async function cadastrarLojaManual(e) {
             status: 'ATIVO',
             fluxoPDV: fluxoInicial,
             emailAcesso: email,
-            senhaAcesso: senha,
             modulosLiberados: modsIniciais,
             relatoriosPermitidos: planoObj.relatoriosPermitidos || TODOS_RELATORIOS_SAAS,
             dataCriacao: firebase.firestore.FieldValue.serverTimestamp()
