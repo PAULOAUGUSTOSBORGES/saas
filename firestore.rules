@@ -14,7 +14,7 @@ service cloud.firestore {
       );
     }
 
-    // Acesso irrestrito para os fundadores do SaaS
+    // Acesso irrestrito para os fundadores do SaaS (inclui write em tudo)
     match /{document=**} {
       allow read, write: if isMaster();
     }
@@ -22,7 +22,7 @@ service cloud.firestore {
     // Consulta de licenca e auto-cadastro de trial por sistemas clientes (FC-Gestao, FC-Food, etc.)
     match /empresas/{empresaId} {
       allow read: if true;
-      allow create: if request.resource.data.status == 'TRIAL';
+      allow create: if request.resource.data.status == 'TRIAL' || request.resource.data.status == 'PENDENTE_PAGAMENTO';
       allow update, delete: if isMaster();
 
       // Subcolecoes de controle financeiro (ex: faturas_saas)
@@ -31,21 +31,25 @@ service cloud.firestore {
       }
     }
 
-    // Consulta de catalogo de planos e softwares
+    // Consulta de catalogo de planos e softwares — leitura publica, escrita somente master
     match /planos/{planoId} {
       allow read: if true;
+      allow write: if isMaster();
     }
 
     match /planos_saas/{planoId} {
       allow read: if true;
+      allow write: if isMaster();
     }
 
     match /sistemas/{sistemaId} {
       allow read: if true;
+      allow write: if isMaster();
     }
 
     match /sistemas_saas/{sistemaId} {
       allow read: if true;
+      allow write: if isMaster();
     }
   }
 }

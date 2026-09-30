@@ -2469,23 +2469,38 @@ async function carregarPlanosMaster() {
 }
 window.carregarPlanosMaster = carregarPlanosMaster;
 
-// Força sincronização de todos os planos padrão com o Firestore (upsert)
+// Força sincronização de planos padrão garantindo que novos planos existam, sem sobrescrever personalizações
 async function sincronizarPlanosPadraoComBanco(forcar = true) {
     try {
         showToast('Sincronizando catálogo de planos com o banco...', 'info');
         const db = firebase.firestore();
+        const snapAtual = await db.collection('planos_saas').get();
+        const mapasExistentes = {};
+        snapAtual.docs.forEach(d => { mapasExistentes[d.id] = d.data(); });
+
         const batch = db.batch();
 
         PLANOS_PADRAO.forEach(p => {
             const ref = db.collection('planos_saas').doc(p.id);
-            batch.set(ref, {
-                ...p,
-                ultimaAtualizacao: firebase.firestore.FieldValue.serverTimestamp()
-            }, { merge: true });
+            const dadosBanco = mapasExistentes[p.id];
+            if (!dadosBanco) {
+                // Se o plano ainda não existe no Firestore, insere com os dados padrão
+                batch.set(ref, {
+                    ...p,
+                    ultimaAtualizacao: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } else {
+                // Se o plano já existe, preserva o preço, nome e dados customizados pelo usuário
+                batch.set(ref, {
+                    sistemaId: dadosBanco.sistemaId || p.sistemaId,
+                    modeloPDV: dadosBanco.modeloPDV || p.modeloPDV,
+                    ultimaAtualizacao: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+            }
         });
 
         await batch.commit();
-        showToast('Catálogo de planos sincronizado com o banco!', 'success');
+        showToast('Catálogo de planos sincronizado sem alterar seus preços personalizados!', 'success');
         await carregarPlanosMaster();
     } catch (e) {
         console.error('Erro ao sincronizar planos padrão:', e);
