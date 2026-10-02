@@ -97,6 +97,13 @@
                     <i class="fa-solid fa-chart-pie w-5 text-center"></i> Visão Geral & Lojas
                 </button>
 
+                <button id="nav-btn-leads" onclick="navegarMaster('leads')" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium hover:bg-slate-800 text-slate-300 transition-colors">
+                    <span class="flex items-center gap-3">
+                        <i class="fa-solid fa-bullseye w-5 text-center text-rose-400"></i> Possíveis Clientes
+                    </span>
+                    <span id="badge-total-leads" class="text-[10px] font-black px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30">0</span>
+                </button>
+
                 <button id="nav-btn-planos" onclick="navegarMaster('planos')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium hover:bg-slate-800 text-slate-300 transition-colors">
                     <i class="fa-solid fa-layer-group w-5 text-center text-blue-400"></i> Gestão de Planos
                 </button>
@@ -244,6 +251,106 @@
                                         <td colspan="7" class="text-center py-12 text-slate-400">
                                             <i class="fa-solid fa-spinner fa-spin text-3xl mb-3 text-amber-400"></i>
                                             <p class="font-medium">Carregando dados das lojas...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==================================================== -->
+                <!-- VIEW NOVO: POSSÍVEIS CLIENTES (LEADS & PROSPECÇÃO)  -->
+                <!-- ==================================================== -->
+                <div id="view-leads" class="space-y-6 hidden">
+                    <!-- CARDS DE METRICAS DE PROSPECÇÃO -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="bg-[#0f172a] p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total de Leads</p>
+                                <h3 class="text-3xl font-black text-white mt-1" id="kpi-total-leads">0</h3>
+                                <p class="text-[11px] text-slate-400 mt-0.5">Potenciais clientes salvos</p>
+                            </div>
+                            <div class="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center text-xl">
+                                <i class="fa-solid fa-bullseye"></i>
+                            </div>
+                        </div>
+
+                        <div class="bg-[#0f172a] p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Aguardando Contato</p>
+                                <h3 class="text-3xl font-black text-amber-400 mt-1" id="kpi-leads-novos">0</h3>
+                                <p class="text-[11px] text-slate-400 mt-0.5">Novos cadastros ou testes</p>
+                            </div>
+                            <div class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-xl">
+                                <i class="fa-solid fa-bell"></i>
+                            </div>
+                        </div>
+
+                        <div class="bg-[#0f172a] p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Em Negociação</p>
+                                <h3 class="text-3xl font-black text-blue-400 mt-1" id="kpi-leads-negociando">0</h3>
+                                <p class="text-[11px] text-slate-400 mt-0.5">Em demonstração / proposta</p>
+                            </div>
+                            <div class="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center text-xl">
+                                <i class="fa-solid fa-handshake"></i>
+                            </div>
+                        </div>
+
+                        <div class="bg-[#0f172a] p-5 rounded-2xl border border-slate-800 shadow-lg flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Convertidos</p>
+                                <h3 class="text-3xl font-black text-emerald-400 mt-1" id="kpi-leads-convertidos">0</h3>
+                                <p class="text-[11px] text-slate-400 mt-0.5">Tornaram-se lojas ativas</p>
+                            </div>
+                            <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl">
+                                <i class="fa-solid fa-circle-check"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FILTROS E BUSCA DE LEADS -->
+                    <div class="bg-[#0f172a] p-4 rounded-2xl border border-slate-800 shadow-lg flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+                        <div class="relative flex-1">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-500"></i>
+                            <input type="text" id="filtro-busca-leads" oninput="filtrarLeadsMaster()" placeholder="Buscar por empresa, contato, WhatsApp, e-mail ou cidade..." class="w-full pl-10 pr-4 py-2.5 bg-slate-900 border border-slate-700/80 rounded-xl text-sm outline-none focus:border-rose-400 text-white font-medium placeholder-slate-500">
+                        </div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <select id="filtro-status-lead" onchange="filtrarLeadsMaster()" class="bg-slate-900 border border-slate-700/80 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-rose-400 text-white font-medium">
+                                <option value="todos">Todos os Status</option>
+                                <option value="NOVO">🆕 Novos / Aguardando</option>
+                                <option value="CONTATO">💬 Primeiro Contato</option>
+                                <option value="DEMO">🖥️ Demonstração</option>
+                                <option value="NEGOCIANDO">🤝 Em Negociação</option>
+                                <option value="CONVERTIDO">🟢 Convertidos</option>
+                                <option value="PERDIDO">⚪ Sem Interesse</option>
+                            </select>
+                            <button onclick="abrirModalNovoLead()" class="bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white font-black px-4 py-2.5 rounded-xl text-xs flex items-center gap-2 transition-all shadow-lg shadow-rose-500/20 shrink-0">
+                                <i class="fa-solid fa-user-plus"></i> Novo Possível Cliente
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- TABELA DE LEADS / POSSÍVEIS CLIENTES -->
+                    <div class="bg-[#0f172a] rounded-2xl border border-slate-800 shadow-xl overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-900/80 border-b border-slate-800 text-slate-400 text-xs uppercase font-bold tracking-wider">
+                                        <th class="py-3.5 px-4">Empresa / Possível Cliente</th>
+                                        <th class="py-3.5 px-4">Responsável & Contato</th>
+                                        <th class="py-3.5 px-4">Sistema & Interesse</th>
+                                        <th class="py-3.5 px-4">Data & Origem</th>
+                                        <th class="py-3.5 px-4">Status & Anotações</th>
+                                        <th class="py-3.5 px-4 text-right">Ações de Venda</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabela-leads-corpo" class="divide-y divide-slate-800/80 text-sm">
+                                    <tr>
+                                        <td colspan="6" class="text-center py-12 text-slate-400">
+                                            <i class="fa-solid fa-spinner fa-spin text-3xl mb-3 text-rose-400"></i>
+                                            <p class="font-medium">Carregando possíveis clientes...</p>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -521,6 +628,10 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
+                    <button type="button" onclick="lojaDossieAtual && abrirModalExcluirLoja(lojaDossieAtual.id)" title="Excluir ou Mover para Possíveis Clientes" class="px-3 py-1.5 rounded-xl bg-red-500/15 hover:bg-red-500/30 text-red-400 border border-red-500/30 font-bold text-xs flex items-center gap-1.5 transition-all">
+                        <i class="fa-solid fa-trash-can text-xs"></i>
+                        <span>Excluir / Mover</span>
+                    </button>
                     <button type="button" onclick="lojaDossieAtual && renovarRapido30Dias(lojaDossieAtual.id)" title="Aprovar Pagamento PIX e Renovar (+30 dias)" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-extrabold text-xs flex items-center gap-1.5 shadow-md shadow-blue-500/20 transition-all">
                         <i class="fa-solid fa-calendar-plus text-xs"></i>
                         <span>+30 Dias (PIX)</span>
@@ -1909,6 +2020,159 @@
                     <button type="button" onclick="fecharModalFuncionarioMaster()" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white transition-colors">Cancelar</button>
                     <button type="submit" id="btn-salvar-func-master" class="px-5 py-2 rounded-xl text-xs font-black bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 hover:from-amber-600 hover:to-yellow-500 transition-all shadow-lg shadow-amber-500/20 flex items-center gap-1.5">
                         <i class="fa-solid fa-floppy-disk"></i> Salvar Colaborador
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DE EXCLUIR OU MOVER LOJA -->
+    <div id="modal-excluir-loja" class="fixed inset-0 z-50 flex items-center justify-center hidden p-4">
+        <div class="fixed inset-0 modal-backdrop-solid" onclick="fecharModalExcluirLoja()"></div>
+        <div class="relative w-full max-w-lg modal-card-solid rounded-3xl p-6 shadow-2xl z-10 space-y-5 animate-fade-in border border-slate-700">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-red-500/10 text-red-400 flex items-center justify-center text-lg border border-red-500/20">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-black text-white">Gerenciar Registro / Exclusão</h3>
+                        <p class="text-xs text-slate-400" id="modal-excluir-subtitulo">O que você deseja fazer com esta empresa?</p>
+                    </div>
+                </div>
+                <button onclick="fecharModalExcluirLoja()" class="w-8 h-8 rounded-lg bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition-colors">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-slate-400">Nome / Empresa:</span>
+                    <span class="text-xs font-bold text-white" id="modal-excluir-loja-nome">...</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-slate-400">ID / Referência:</span>
+                    <span class="text-xs font-mono text-amber-400" id="modal-excluir-loja-id">...</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-slate-400">Contato / WhatsApp:</span>
+                    <span class="text-xs font-medium text-emerald-400" id="modal-excluir-loja-contato">...</span>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <!-- OPÇÃO 1: Mover para Possíveis Clientes -->
+                <button type="button" onclick="confirmarExclusaoLoja('mover_lead')" class="w-full text-left p-4 rounded-2xl bg-gradient-to-r from-rose-950/40 to-slate-900 hover:from-rose-900/50 hover:to-slate-800 border border-rose-500/30 hover:border-rose-400 transition-all group cursor-pointer">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 group-hover:scale-110 transition-transform flex items-center justify-center text-lg shrink-0">
+                            <i class="fa-solid fa-bullseye"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="text-sm font-black text-rose-300 flex items-center gap-2">
+                                Mover para Possíveis Clientes (Lead)
+                                <span class="text-[10px] bg-rose-500/20 px-2 py-0.5 rounded-full font-bold">Recomendado</span>
+                            </div>
+                            <p class="text-xs text-slate-400 mt-0.5">Remove da lista de lojas ativas (não afeta MRR nem relatórios) e salva o contato na aba de prospecção para acompanhamento comercial futuro.</p>
+                        </div>
+                    </div>
+                </button>
+
+                <!-- OPÇÃO 2: Excluir Permanentemente -->
+                <button type="button" onclick="confirmarExclusaoLoja('excluir_permanente')" class="w-full text-left p-4 rounded-2xl bg-gradient-to-r from-red-950/30 to-slate-900 hover:from-red-900/40 hover:to-slate-800 border border-red-500/20 hover:border-red-500/50 transition-all group cursor-pointer">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-red-500/20 text-red-400 group-hover:scale-110 transition-transform flex items-center justify-center text-lg shrink-0">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="text-sm font-black text-red-400">
+                                Excluir Definitivamente do Banco de Dados
+                            </div>
+                            <p class="text-xs text-slate-400 mt-0.5">Apaga permanentemente o documento do Firestore (ideal para testes descartáveis como "aa", "a@gmail.com", etc.).</p>
+                        </div>
+                    </div>
+                </button>
+            </div>
+
+            <div class="flex justify-end pt-2 border-t border-slate-800">
+                <button onclick="fecharModalExcluirLoja()" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300 transition-colors">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE NOVO / EDITAR POSSÍVEL CLIENTE -->
+    <div id="modal-lead-form" class="fixed inset-0 z-50 flex items-center justify-center hidden p-4">
+        <div class="fixed inset-0 modal-backdrop-solid" onclick="fecharModalLeadForm()"></div>
+        <div class="relative w-full max-w-lg modal-card-solid rounded-3xl p-6 shadow-2xl z-10 space-y-5 animate-fade-in border border-slate-700">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-400 flex items-center justify-center text-lg border border-rose-500/20">
+                        <i class="fa-solid fa-user-plus"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-black text-white" id="modal-lead-titulo">Novo Possível Cliente</h3>
+                        <p class="text-xs text-slate-400">Cadastre um contato para prospecção comercial</p>
+                    </div>
+                </div>
+                <button onclick="fecharModalLeadForm()" class="w-8 h-8 rounded-lg bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition-colors">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="form-lead-master" onsubmit="salvarLeadMaster(event)" class="space-y-4">
+                <input type="hidden" id="lead-form-id">
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="col-span-2">
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Nome da Empresa / Loja *</label>
+                        <input type="text" id="lead-nome-empresa" required placeholder="Ex: Móveis Brasil" class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs font-semibold text-white outline-none focus:border-rose-400">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Responsável / Contato</label>
+                        <input type="text" id="lead-responsavel" placeholder="Ex: João Silva" class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs font-semibold text-white outline-none focus:border-rose-400">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">WhatsApp (DDD + Número) *</label>
+                        <input type="text" id="lead-whatsapp" required placeholder="Ex: (62) 99999-9999" class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs font-semibold text-white outline-none focus:border-rose-400">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">E-mail</label>
+                        <input type="email" id="lead-email" placeholder="contato@empresa.com" class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs font-semibold text-white outline-none focus:border-rose-400">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Cidade / UF</label>
+                        <input type="text" id="lead-cidade" placeholder="Ex: Goiânia - GO" class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs font-semibold text-white outline-none focus:border-rose-400">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Sistema de Interesse</label>
+                        <select id="lead-sistema" class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs font-semibold text-white outline-none focus:border-rose-400">
+                            <option value="fc_gestao">FC-Gestão (Móveis & Varejo)</option>
+                            <option value="fc_food">FC-Food (Restaurantes & Delivery)</option>
+                            <option value="fc_barber">FC-Barber (Barbearias & Estética)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Status do Lead</label>
+                        <select id="lead-status" class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs font-semibold text-white outline-none focus:border-rose-400">
+                            <option value="NOVO">🆕 Novo / Aguardando</option>
+                            <option value="CONTATO">💬 Primeiro Contato Feito</option>
+                            <option value="DEMO">🖥️ Demonstração Agendada</option>
+                            <option value="NEGOCIANDO">🤝 Em Negociação</option>
+                            <option value="CONVERTIDO">🟢 Convertido em Cliente</option>
+                            <option value="PERDIDO">⚪ Sem Interesse / Perdido</option>
+                        </select>
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Anotações Comerciais</label>
+                        <textarea id="lead-notas" rows="3" placeholder="Ex: Fez teste pelo site, gostou do PDV com NF-e, agendou retorno para terça-feira..." class="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-rose-400 resize-none"></textarea>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+                    <button type="button" onclick="fecharModalLeadForm()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-400 hover:text-white transition-colors">Cancelar</button>
+                    <button type="submit" id="btn-salvar-lead" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-xs font-black text-white transition-all shadow-lg shadow-rose-500/20 flex items-center gap-2">
+                        <i class="fa-solid fa-floppy-disk"></i> Salvar Lead
                     </button>
                 </div>
             </form>

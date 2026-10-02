@@ -51,5 +51,11 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isMaster();
     }
+
+    // Gestão de Leads e Possíveis Clientes — criação pelo site de captação, controle total do Master
+    match /leads_saas/{leadId} {
+      allow read, write: if isMaster();
+      allow create: if true;
+    }
   }
 }

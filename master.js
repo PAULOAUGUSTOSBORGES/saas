@@ -19,6 +19,10 @@ let filtroPlanoSistemaAtual = 'todos';
 let filtroVencimentoRelatorio = 'atrasados';
 let viewAtual = 'lojas';
 let lojaDossieAtual = null;
+let listaLeads = [];
+let filtroStatusLeadAtual = 'todos';
+let buscaLeadAtual = '';
+let lojaExcluirAlvo = null;
 
 const DADOS_FUNDADOR_PADRAO = {
     nome: 'Paulo Augusto Silva Borges',
@@ -356,7 +360,7 @@ window.fazerLogoutMaster = fazerLogoutMaster;
 function navegarMaster(view) {
     viewAtual = view;
 
-    const views = ['lojas', 'planos', 'contratos', 'relatorios', 'sistemas'];
+    const views = ['lojas', 'leads', 'planos', 'contratos', 'relatorios', 'sistemas'];
     views.forEach(v => {
         const elView = document.getElementById(`view-${v}`);
         const elBtn = document.getElementById(`nav-btn-${v}`);
@@ -370,7 +374,11 @@ function navegarMaster(view) {
     const activeBtn = document.getElementById(`nav-btn-${view}`);
     if (activeView) activeView.classList.remove('hidden');
     if (activeBtn) {
-        activeBtn.className = 'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all bg-amber-500/15 text-amber-400 border border-amber-500/30';
+        if (view === 'leads') {
+            activeBtn.className = 'w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-bold transition-all bg-rose-500/15 text-rose-400 border border-rose-500/30';
+        } else {
+            activeBtn.className = 'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all bg-amber-500/15 text-amber-400 border border-amber-500/30';
+        }
     }
 
     // Atualiza cabeçalho
@@ -389,6 +397,22 @@ function navegarMaster(view) {
                 </button>
             `;
         }
+    } else if (view === 'leads') {
+        if (elTitulo) elTitulo.innerHTML = '<i class="fa-solid fa-bullseye text-rose-400"></i> Possíveis Clientes & Prospecção (Leads)';
+        if (elAcoes) {
+            elAcoes.innerHTML = `
+                <button onclick="carregarLeadsMaster()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3.5 py-2 rounded-xl text-xs font-bold transition-all border border-slate-700 flex items-center gap-2">
+                    <i class="fa-solid fa-arrows-rotate" id="btn-icon-refresh-leads"></i> Atualizar
+                </button>
+                <button onclick="exportarLeadsExcel()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 shadow-lg shadow-emerald-600/20">
+                    <i class="fa-solid fa-file-excel"></i> Exportar Leads
+                </button>
+                <button onclick="abrirModalNovoLead()" class="bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white px-4 py-2 rounded-xl text-xs font-black transition-all shadow-lg shadow-rose-500/20 flex items-center gap-2">
+                    <i class="fa-solid fa-user-plus"></i> Novo Possível Cliente
+                </button>
+            `;
+        }
+        carregarLeadsMaster();
     } else if (view === 'planos') {
         if (elTitulo) elTitulo.innerHTML = '<i class="fa-solid fa-layer-group text-blue-400"></i> Catálogo de Planos do SaaS';
         if (elAcoes) {
@@ -556,6 +580,7 @@ async function carregarTodasAsLojasMaster() {
         renderizarTabelaLojasMaster();
         popularSelectEmpresasContrato();
         if (typeof renderizarRelatoriosSaaS === 'function') renderizarRelatoriosSaaS();
+        if (typeof carregarLeadsMaster === 'function') carregarLeadsMaster(true);
 
     } catch (err) {
         console.error("Erro ao listar lojas:", err);
@@ -779,6 +804,9 @@ function renderizarTabelaLojasMaster() {
                                 <i class="fa-solid fa-lock text-sm"></i>
                             </button>
                         `}
+                        <button onclick="abrirModalExcluirLoja('${loja.id}')" title="Excluir ou Mover para Possíveis Clientes" class="w-8 h-8 rounded-xl bg-red-500/15 hover:bg-red-500/30 text-red-400 flex items-center justify-center transition-all border border-red-500/20">
+                            <i class="fa-solid fa-trash-can text-sm"></i>
+                        </button>
                     </div>
                 </td>
             </tr>
@@ -994,6 +1022,145 @@ async function renovarRapido30Dias(empresaId) {
     }
 }
 window.renovarRapido30Dias = renovarRapido30Dias;
+
+// ==========================================
+// EXCLUSÃO / MIGRAÇÃO DE LOJAS & TESTES
+// ==========================================
+function abrirModalExcluirLoja(lojaId) {
+    const loja = listaLojas.find(l => l.id === lojaId) || (lojaDossieAtual?.id === lojaId ? lojaDossieAtual : null);
+    if (!loja) return;
+
+    lojaExcluirAlvo = loja;
+
+    const modal = document.getElementById('modal-excluir-loja');
+    const elNome = document.getElementById('modal-excluir-loja-nome');
+    const elId = document.getElementById('modal-excluir-loja-id');
+    const elContato = document.getElementById('modal-excluir-loja-contato');
+
+    const nome = loja.nomeEmpresa || loja.nome || 'Sem Nome';
+    const zap = loja.whatsapp || loja.configEmpresa?.telefone || loja.donoInfo?.telefone || 'Sem WhatsApp';
+    const email = loja.emailAcesso || loja.donoInfo?.email || '';
+
+    if (elNome) elNome.innerText = nome;
+    if (elId) elId.innerText = loja.id;
+    if (elContato) elContato.innerText = zap + (email ? ' • ' + email : '');
+
+    if (modal) modal.classList.remove('hidden');
+}
+window.abrirModalExcluirLoja = abrirModalExcluirLoja;
+
+function fecharModalExcluirLoja() {
+    const modal = document.getElementById('modal-excluir-loja');
+    if (modal) modal.classList.add('hidden');
+    lojaExcluirAlvo = null;
+}
+window.fecharModalExcluirLoja = fecharModalExcluirLoja;
+
+async function confirmarExclusaoLoja(tipo) {
+    if (!lojaExcluirAlvo) return;
+    const loja = lojaExcluirAlvo;
+    const lojaId = loja.id;
+    const nomeLoja = loja.nomeEmpresa || loja.nome || 'Empresa';
+
+    try {
+        if (tipo === 'mover_lead') {
+            // Salva na coleção leads_saas
+            const zap = loja.whatsapp || loja.configEmpresa?.telefone || loja.donoInfo?.telefone || '';
+            const email = loja.emailAcesso || loja.donoInfo?.email || '';
+            const resp = loja.donoInfo?.nome || loja.responsavel || '';
+            const cidade = loja.configEmpresa?.cidade || loja.cidade || '';
+            const plano = loja.plano || 'plano_pro';
+            const sistemaId = loja.sistemaId || 'fc_gestao';
+
+            const leadDocId = lojaId.startsWith('solicitacao_') ? lojaId.replace('solicitacao_', 'lead_') : 'lead_' + lojaId;
+            
+            await firebase.firestore().collection('leads_saas').doc(leadDocId).set({
+                nomeEmpresa: nomeLoja,
+                responsavel: resp,
+                whatsapp: zap,
+                email: email,
+                cidade: cidade,
+                plano: plano,
+                sistemaId: sistemaId,
+                status: 'NOVO',
+                origem: lojaId.startsWith('solicitacao_') ? 'Solicitação de Teste' : 'Migrado de Lojas',
+                notas: (loja.crmNotas || '') ? (loja.crmNotas + '\n(Movido da lista de lojas para possíveis clientes)') : 'Movido da lista de lojas para acompanhamento comercial.',
+                dataCriacao: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+
+            // Exclui da coleção empresas do SaaS Central
+            await firebase.firestore().collection('empresas').doc(lojaId).delete().catch(() => {});
+
+            // Se existir no banco de produção espelho, exclui também para evitar que reapareça
+            if (window.LOJA_PRODUCAO_CONFIG) {
+                try {
+                    let prodApp = firebase.apps.find(a => a.name === 'lojaProdMasterApp');
+                    if (prodApp) {
+                        await prodApp.firestore().collection('empresas').doc(lojaId).delete().catch(() => {});
+                    }
+                } catch(eProd) {}
+            }
+
+            // Remove da memória local
+            listaLojas = listaLojas.filter(l => l.id !== lojaId);
+            atualizarKPIsMaster();
+            renderizarTabelaLojasMaster();
+            popularSelectEmpresasContrato();
+            fecharModalExcluirLoja();
+            if (typeof fecharModalDossie === 'function') fecharModalDossie();
+
+            // Atualiza contagem de leads
+            await carregarLeadsMaster(true);
+
+            showToast(`"${nomeLoja}" foi movido para Possíveis Clientes com sucesso!`, 'success');
+
+        } else if (tipo === 'excluir_permanente') {
+            if (!confirm(`Tem certeza absoluta de que deseja EXCLUIR DEFINITIVAMENTE "${nomeLoja}" (${lojaId}) do banco de dados?\n\nEsta ação apagará permanentemente o cadastro e não poderá ser desfeita.`)) {
+                return;
+            }
+
+            // Exclui subcoleções conhecidas
+            try {
+                const subCols = ['faturas_saas', 'funcionarios', 'configuracoes', 'caixa'];
+                for (const col of subCols) {
+                    const snapSub = await firebase.firestore().collection('empresas').doc(lojaId).collection(col).get();
+                    if (!snapSub.empty) {
+                        const batchSub = firebase.firestore().batch();
+                        snapSub.docs.forEach(docSub => batchSub.delete(docSub.ref));
+                        await batchSub.commit().catch(() => {});
+                    }
+                }
+            } catch(eSub) {}
+
+            // Exclui doc da empresa central
+            await firebase.firestore().collection('empresas').doc(lojaId).delete();
+
+            // Se existir no banco de produção espelho
+            if (window.LOJA_PRODUCAO_CONFIG) {
+                try {
+                    let prodApp = firebase.apps.find(a => a.name === 'lojaProdMasterApp');
+                    if (prodApp) {
+                        await prodApp.firestore().collection('empresas').doc(lojaId).delete().catch(() => {});
+                    }
+                } catch(eProd) {}
+            }
+
+            // Remove da memória local
+            listaLojas = listaLojas.filter(l => l.id !== lojaId);
+            atualizarKPIsMaster();
+            renderizarTabelaLojasMaster();
+            popularSelectEmpresasContrato();
+            fecharModalExcluirLoja();
+            if (typeof fecharModalDossie === 'function') fecharModalDossie();
+
+            showToast(`"${nomeLoja}" foi excluído permanentemente do sistema!`, 'info');
+        }
+    } catch(err) {
+        console.error("Erro ao gerenciar exclusão da loja:", err);
+        showToast("Erro ao processar: " + err.message, "error");
+    }
+}
+window.confirmarExclusaoLoja = confirmarExclusaoLoja;
 
 
 // ==========================================
@@ -4528,6 +4695,435 @@ async function instalarPWAMaster() {
 }
 window.instalarPWAMaster = instalarPWAMaster;
 window.mostrarBotoesInstalarMaster = mostrarBotoesInstalarMaster;
+
+// ==========================================
+// MÓDULO 7: GESTÃO DE POSSÍVEIS CLIENTES (LEADS & PROSPECÇÃO)
+// ==========================================
+
+async function carregarLeadsMaster(silencioso = false) {
+    const corpo = document.getElementById('tabela-leads-corpo');
+    const badge = document.getElementById('badge-total-leads');
+    const iconRefresh = document.getElementById('btn-icon-refresh-leads');
+    if (iconRefresh) iconRefresh.classList.add('fa-spin');
+
+    try {
+        let snap;
+        try {
+            snap = await firebase.firestore().collection('leads_saas').orderBy('dataCriacao', 'desc').get();
+        } catch(eOrder) {
+            snap = await firebase.firestore().collection('leads_saas').get();
+        }
+
+        listaLeads = snap.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                ...data,
+                dataCriacaoFormatada: data.dataCriacao && data.dataCriacao.toDate ? data.dataCriacao.toDate().toLocaleDateString('pt-BR') : 'Recente'
+            };
+        });
+
+        // Atualiza contadores
+        const total = listaLeads.length;
+        const novos = listaLeads.filter(l => (l.status || 'NOVO') === 'NOVO').length;
+        const negociando = listaLeads.filter(l => ['CONTATO', 'DEMO', 'NEGOCIANDO'].includes(l.status)).length;
+        const convertidos = listaLeads.filter(l => l.status === 'CONVERTIDO').length;
+
+        if (badge) badge.innerText = total;
+        const kpiTotal = document.getElementById('kpi-total-leads');
+        const kpiNovos = document.getElementById('kpi-leads-novos');
+        const kpiNegoc = document.getElementById('kpi-leads-negociando');
+        const kpiConv = document.getElementById('kpi-leads-convertidos');
+
+        if (kpiTotal) kpiTotal.innerText = total;
+        if (kpiNovos) kpiNovos.innerText = novos;
+        if (kpiNegoc) kpiNegoc.innerText = negociando;
+        if (kpiConv) kpiConv.innerText = convertidos;
+
+        if (!silencioso && corpo) {
+            renderizarTabelaLeads();
+        }
+    } catch(err) {
+        console.error("Erro ao carregar leads:", err);
+        if (corpo && !silencioso) {
+            corpo.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center py-10 text-red-400">
+                        <i class="fa-solid fa-triangle-exclamation text-2xl mb-2"></i>
+                        <p>Erro ao carregar possíveis clientes: ${err.message}</p>
+                    </td>
+                </tr>
+            `;
+        }
+    } finally {
+        if (iconRefresh) iconRefresh.classList.remove('fa-spin');
+    }
+}
+window.carregarLeadsMaster = carregarLeadsMaster;
+
+function filtrarLeadsMaster() {
+    const inputBusca = document.getElementById('filtro-busca-leads');
+    const selectStatus = document.getElementById('filtro-status-lead');
+
+    buscaLeadAtual = inputBusca ? inputBusca.value.toLowerCase().trim() : '';
+    filtroStatusLeadAtual = selectStatus ? selectStatus.value : 'todos';
+
+    renderizarTabelaLeads();
+}
+window.filtrarLeadsMaster = filtrarLeadsMaster;
+
+function renderizarTabelaLeads() {
+    const corpo = document.getElementById('tabela-leads-corpo');
+    if (!corpo) return;
+
+    const filtrados = listaLeads.filter(l => {
+        const nome = (l.nomeEmpresa || '').toLowerCase();
+        const resp = (l.responsavel || '').toLowerCase();
+        const zap = String(l.whatsapp || '').replace(/\D/g, '');
+        const email = (l.email || '').toLowerCase();
+        const cid = (l.cidade || '').toLowerCase();
+
+        const matchBusca = !buscaLeadAtual || nome.includes(buscaLeadAtual) || resp.includes(buscaLeadAtual) || zap.includes(buscaLeadAtual) || email.includes(buscaLeadAtual) || cid.includes(buscaLeadAtual);
+        const status = l.status || 'NOVO';
+        const matchStatus = filtroStatusLeadAtual === 'todos' || status === filtroStatusLeadAtual;
+
+        return matchBusca && matchStatus;
+    });
+
+    if (filtrados.length === 0) {
+        corpo.innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center py-12 text-slate-500">
+                    <i class="fa-solid fa-user-slash text-3xl mb-2"></i>
+                    <p>Nenhum possível cliente encontrado.</p>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    const statusBadgeMap = {
+        'NOVO': '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">🆕 Novo</span>',
+        'CONTATO': '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">💬 Em Contato</span>',
+        'DEMO': '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-purple-500/10 text-purple-400 border border-purple-500/30">🖥️ Demonstração</span>',
+        'NEGOCIANDO': '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-500/10 text-blue-400 border border-blue-500/30">🤝 Negociando</span>',
+        'CONVERTIDO': '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">🟢 Convertido</span>',
+        'PERDIDO': '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-slate-500/10 text-slate-400 border border-slate-500/30">⚪ Perdido</span>'
+    };
+
+    corpo.innerHTML = filtrados.map(lead => {
+        const nome = lead.nomeEmpresa || 'Sem Nome';
+        const resp = lead.responsavel || 'Contato';
+        const zap = lead.whatsapp || '';
+        const email = lead.email || '';
+        const cid = lead.cidade || '';
+        const plano = lead.plano || 'PRO';
+        const sisId = lead.sistemaId || 'fc_gestao';
+        const status = lead.status || 'NOVO';
+        const notas = lead.notas || '';
+        const dataStr = lead.dataCriacaoFormatada || 'Recente';
+        const origem = lead.origem || 'Site';
+
+        const sisObj = listaSistemas.find(s => s.id === sisId) || SISTEMAS_PADRAO.find(s => s.id === sisId) || { nome: 'FC-Gestão', icone: 'fa-store' };
+
+        return `
+            <tr class="hover:bg-slate-800/40 transition-colors">
+                <td class="py-4 px-4">
+                    <div class="font-extrabold text-white text-base">${nome}</div>
+                    <div class="text-xs text-slate-400">${cid ? '<i class="fa-solid fa-location-dot text-[10px] text-rose-400 mr-1"></i>' + cid : 'Cidade não informada'}</div>
+                    <div class="text-[10px] text-slate-500 font-mono mt-0.5">ID: ${lead.id}</div>
+                </td>
+                <td class="py-4 px-4">
+                    <div class="font-semibold text-slate-200">${resp}</div>
+                    ${zap ? `<div class="text-xs text-emerald-400 font-medium mt-0.5 flex items-center gap-1.5"><i class="fa-brands fa-whatsapp"></i> ${zap}</div>` : ''}
+                    ${email ? `<div class="text-xs text-slate-400 mt-0.5 flex items-center gap-1.5"><i class="fa-solid fa-envelope text-[10px] text-slate-500"></i> ${email}</div>` : ''}
+                </td>
+                <td class="py-4 px-4">
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black border bg-amber-500/10 text-amber-400 border-amber-500/25">
+                        <i class="fa-solid ${sisObj.icone || 'fa-store'} text-[10px]"></i> ${sisObj.nome}
+                    </span>
+                    <div class="text-xs text-slate-300 font-bold uppercase mt-1">Plano: ${plano}</div>
+                </td>
+                <td class="py-4 px-4">
+                    <div class="text-xs font-semibold text-slate-300">${dataStr}</div>
+                    <span class="text-[10px] text-slate-400 bg-slate-800 px-2 py-0.5 rounded-full inline-block mt-0.5 border border-slate-700">${origem}</span>
+                </td>
+                <td class="py-4 px-4 max-w-xs">
+                    <div class="mb-1">${statusBadgeMap[status] || statusBadgeMap.NOVO}</div>
+                    ${notas ? `<p class="text-xs text-slate-400 italic truncate" title="${notas.replace(/"/g, '&quot;')}">${notas}</p>` : `<span class="text-[11px] text-slate-600">Sem anotações</span>`}
+                </td>
+                <td class="py-4 px-4 text-right">
+                    <div class="flex items-center justify-end gap-1.5">
+                        ${zap ? `
+                            <button onclick="abrirWhatsAppLead('${zap}', '${nome.replace(/'/g, "\\'")}', '${plano}', '${sisObj.nome}')" title="Conversar no WhatsApp" class="w-8 h-8 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/30 text-emerald-400 flex items-center justify-center transition-all border border-emerald-500/20">
+                                <i class="fa-brands fa-whatsapp text-base"></i>
+                            </button>
+                        ` : ''}
+                        <button onclick="converterLeadEmLoja('${lead.id}')" title="Converter em Loja Ativa (Criar Empresa)" class="w-8 h-8 rounded-xl bg-blue-500/15 hover:bg-blue-500/30 text-blue-400 flex items-center justify-center transition-all border border-blue-500/20">
+                            <i class="fa-solid fa-store text-xs"></i>
+                        </button>
+                        <button onclick="abrirModalNovoLead('${lead.id}')" title="Editar Lead / Anotações" class="w-8 h-8 rounded-xl bg-amber-500/15 hover:bg-amber-500/30 text-amber-400 flex items-center justify-center transition-all border border-amber-500/20">
+                            <i class="fa-solid fa-pen text-xs"></i>
+                        </button>
+                        <button onclick="excluirLeadMaster('${lead.id}')" title="Excluir Lead" class="w-8 h-8 rounded-xl bg-red-500/15 hover:bg-red-500/30 text-red-400 flex items-center justify-center transition-all border border-red-500/20">
+                            <i class="fa-solid fa-trash-can text-xs"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+window.renderizarTabelaLeads = renderizarTabelaLeads;
+
+function abrirModalNovoLead(leadId = null) {
+    const modal = document.getElementById('modal-lead-form');
+    const titulo = document.getElementById('modal-lead-titulo');
+    const inputId = document.getElementById('lead-form-id');
+    const inputNome = document.getElementById('lead-nome-empresa');
+    const inputResp = document.getElementById('lead-responsavel');
+    const inputZap = document.getElementById('lead-whatsapp');
+    const inputEmail = document.getElementById('lead-email');
+    const inputCid = document.getElementById('lead-cidade');
+    const inputSis = document.getElementById('lead-sistema');
+    const inputStatus = document.getElementById('lead-status');
+    const inputNotas = document.getElementById('lead-notas');
+
+    if (!modal) return;
+
+    if (leadId) {
+        const lead = listaLeads.find(l => l.id === leadId);
+        if (lead) {
+            if (titulo) titulo.innerText = 'Editar Possível Cliente';
+            if (inputId) inputId.value = lead.id;
+            if (inputNome) inputNome.value = lead.nomeEmpresa || '';
+            if (inputResp) inputResp.value = lead.responsavel || '';
+            if (inputZap) inputZap.value = lead.whatsapp || '';
+            if (inputEmail) inputEmail.value = lead.email || '';
+            if (inputCid) inputCid.value = lead.cidade || '';
+            if (inputSis) inputSis.value = lead.sistemaId || 'fc_gestao';
+            if (inputStatus) inputStatus.value = lead.status || 'NOVO';
+            if (inputNotas) inputNotas.value = lead.notas || '';
+        }
+    } else {
+        if (titulo) titulo.innerText = 'Novo Possível Cliente';
+        if (inputId) inputId.value = '';
+        if (inputNome) inputNome.value = '';
+        if (inputResp) inputResp.value = '';
+        if (inputZap) inputZap.value = '';
+        if (inputEmail) inputEmail.value = '';
+        if (inputCid) inputCid.value = '';
+        if (inputSis) inputSis.value = 'fc_gestao';
+        if (inputStatus) inputStatus.value = 'NOVO';
+        if (inputNotas) inputNotas.value = '';
+    }
+
+    modal.classList.remove('hidden');
+}
+window.abrirModalNovoLead = abrirModalNovoLead;
+
+function fecharModalLeadForm() {
+    const modal = document.getElementById('modal-lead-form');
+    if (modal) modal.classList.add('hidden');
+}
+window.fecharModalLeadForm = fecharModalLeadForm;
+
+async function salvarLeadMaster(e) {
+    if (e) e.preventDefault();
+    const btn = document.getElementById('btn-salvar-lead');
+    const leadId = document.getElementById('lead-form-id')?.value;
+    const nomeEmpresa = document.getElementById('lead-nome-empresa')?.value.trim();
+    const responsavel = document.getElementById('lead-responsavel')?.value.trim();
+    const whatsapp = document.getElementById('lead-whatsapp')?.value.trim();
+    const email = document.getElementById('lead-email')?.value.trim();
+    const cidade = document.getElementById('lead-cidade')?.value.trim();
+    const sistemaId = document.getElementById('lead-sistema')?.value || 'fc_gestao';
+    const status = document.getElementById('lead-status')?.value || 'NOVO';
+    const notas = document.getElementById('lead-notas')?.value.trim();
+
+    if (!nomeEmpresa || !whatsapp) {
+        showToast('Nome da empresa e WhatsApp são obrigatórios!', 'error');
+        return;
+    }
+
+    try {
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
+        }
+
+        const idFinal = leadId || ('lead_' + Date.now());
+        const dados = {
+            nomeEmpresa,
+            responsavel,
+            whatsapp,
+            email,
+            cidade,
+            sistemaId,
+            status,
+            notas,
+            atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        if (!leadId) {
+            dados.dataCriacao = firebase.firestore.FieldValue.serverTimestamp();
+            dados.origem = 'Manual (Painel Master)';
+        }
+
+        await firebase.firestore().collection('leads_saas').doc(idFinal).set(dados, { merge: true });
+
+        showToast('Possível cliente salvo com sucesso!', 'success');
+        fecharModalLeadForm();
+        await carregarLeadsMaster();
+    } catch(err) {
+        console.error("Erro ao salvar lead:", err);
+        showToast("Erro ao salvar: " + err.message, "error");
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Salvar Lead';
+        }
+    }
+}
+window.salvarLeadMaster = salvarLeadMaster;
+
+async function excluirLeadMaster(leadId) {
+    const lead = listaLeads.find(l => l.id === leadId);
+    const nome = lead ? lead.nomeEmpresa : 'Lead';
+
+    if (!confirm(`Deseja realmente excluir "${nome}" da lista de possíveis clientes?`)) return;
+
+    try {
+        await firebase.firestore().collection('leads_saas').doc(leadId).delete();
+        listaLeads = listaLeads.filter(l => l.id !== leadId);
+        showToast('Possível cliente excluído com sucesso.', 'info');
+        renderizarTabelaLeads();
+
+        const badge = document.getElementById('badge-total-leads');
+        if (badge) badge.innerText = listaLeads.length;
+    } catch(err) {
+        console.error("Erro ao excluir lead:", err);
+        showToast("Erro ao excluir: " + err.message, "error");
+    }
+}
+window.excluirLeadMaster = excluirLeadMaster;
+
+function abrirWhatsAppLead(zap, nomeEmpresa, plano, sistemaNome) {
+    const limpo = String(zap).replace(/\D/g, '');
+    if (!limpo) {
+        showToast('Número de WhatsApp inválido.', 'warning');
+        return;
+    }
+    const dddNum = limpo.startsWith('55') ? limpo : ('55' + limpo);
+    const msg = encodeURIComponent(
+        `Olá! Tudo bem?\n\n` +
+        `Me chamo Paulo Augusto, sou fundador do ${sistemaNome}.\n` +
+        `Vi que você demonstrou interesse pelo sistema para a empresa *${nomeEmpresa}*.\n\n` +
+        `Gostaria de tirar alguma dúvida ou agendar uma rápida demonstração sem compromisso?`
+    );
+    window.open(`https://wa.me/${dddNum}?text=${msg}`, '_blank');
+}
+window.abrirWhatsAppLead = abrirWhatsAppLead;
+
+async function converterLeadEmLoja(leadId) {
+    const lead = listaLeads.find(l => l.id === leadId);
+    if (!lead) return;
+
+    const nome = lead.nomeEmpresa || 'Nova Empresa';
+    if (!confirm(`Deseja converter "${nome}" em uma Loja Ativa no SaaS?\n\nIsso criará a empresa no sistema com acesso liberado.`)) return;
+
+    try {
+        const empresaId = 'loja_' + Date.now();
+        const baseVenc = new Date();
+        baseVenc.setDate(baseVenc.getDate() + 30);
+        const vencStr = baseVenc.toISOString().split('T')[0];
+
+        const batch = firebase.firestore().batch();
+        const empRef = firebase.firestore().collection('empresas').doc(empresaId);
+
+        batch.set(empRef, {
+            nomeEmpresa: lead.nomeEmpresa,
+            nome: lead.nomeEmpresa,
+            sistemaId: lead.sistemaId || 'fc_gestao',
+            plano: lead.plano || 'plano_pro',
+            valorMensalidade: 99.00,
+            status: 'ATIVO',
+            dataVencimento: vencStr,
+            emailAcesso: lead.email || '',
+            whatsapp: lead.whatsapp || '',
+            origemLeadId: leadId,
+            dataCriacao: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        // Configurações
+        const cfgRef = empRef.collection('configuracoes').doc('config');
+        batch.set(cfgRef, {
+            empresa: {
+                nome: lead.nomeEmpresa,
+                fantasia: lead.nomeEmpresa,
+                telefone: lead.whatsapp || '',
+                cidade: lead.cidade || ''
+            }
+        });
+
+        await batch.commit();
+
+        // Atualiza status do lead para CONVERTIDO
+        await firebase.firestore().collection('leads_saas').doc(leadId).update({
+            status: 'CONVERTIDO',
+            empresaIdCriada: empresaId,
+            convertidoEm: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        showToast(`Loja "${nome}" criada e ativada com sucesso!`, 'success');
+
+        // Recarrega lojas e leads
+        await carregarTodasAsLojasMaster();
+        await carregarLeadsMaster();
+        navegarMaster('lojas');
+
+    } catch(err) {
+        console.error("Erro ao converter lead:", err);
+        showToast("Erro ao converter: " + err.message, "error");
+    }
+}
+window.converterLeadEmLoja = converterLeadEmLoja;
+
+function exportarLeadsExcel() {
+    if (listaLeads.length === 0) {
+        showToast('Nenhum possível cliente cadastrado para exportar.', 'info');
+        return;
+    }
+
+    let csv = "ID,Empresa,Responsavel,WhatsApp,Email,Cidade,Sistema,Status,Origem,Data Cadastro,Notas\n";
+    listaLeads.forEach(l => {
+        const linha = [
+            `"${l.id}"`,
+            `"${(l.nomeEmpresa || '').replace(/"/g, '""')}"`,
+            `"${(l.responsavel || '').replace(/"/g, '""')}"`,
+            `"${(l.whatsapp || '').replace(/"/g, '""')}"`,
+            `"${(l.email || '').replace(/"/g, '""')}"`,
+            `"${(l.cidade || '').replace(/"/g, '""')}"`,
+            `"${(l.sistemaId || 'fc_gestao')}"`,
+            `"${(l.status || 'NOVO')}"`,
+            `"${(l.origem || 'Site')}"`,
+            `"${(l.dataCriacaoFormatada || '')}"`,
+            `"${(l.notas || '').replace(/"/g, '""').replace(/\n/g, ' ')}"`
+        ].join(',');
+        csv += linha + "\n";
+    });
+
+    const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `possiveis_clientes_saas_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast('Exportação de leads concluída!', 'success');
+}
+window.exportarLeadsExcel = exportarLeadsExcel;
 
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(mostrarBotoesInstalarMaster, 600);
