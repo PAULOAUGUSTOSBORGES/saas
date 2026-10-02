@@ -32,6 +32,12 @@ service cloud.firestore {
     }
 
     // Consulta de catalogo de planos e softwares — leitura publica, escrita somente master
+    // Configuracoes publicas do SaaS (informacoes do fundador para suporte e integracoes)
+    match /saas_config/{configId} {
+      allow read: if true;
+      allow write: if isMaster();
+    }
+
     match /planos/{planoId} {
       allow read: if true;
       allow write: if isMaster();
@@ -56,6 +62,13 @@ service cloud.firestore {
     match /leads_saas/{leadId} {
       allow read, write: if isMaster();
       allow create: if true;
+    }
+
+    // FAQ Dinâmico / Base de conhecimento compartilhada entre todas as contas
+    match /faq_dinamico/{faqId} {
+      allow read: if true;
+      allow create: if true;
+      allow update, delete: if isMaster();
     }
   }
 }

@@ -1,4 +1,4 @@
-// ==========================================================================
+﻿// ==========================================================================
 // MASTER.JS - Painel do Fundador SaaS (Sistema Master Independente)
 // Gestão de Lojas, Dossiê Completo, Catálogo de Planos e Emissor de Contratos
 // Fundador: pauloaugusto.silvaborges@gmail.com
@@ -28,7 +28,7 @@ const DADOS_FUNDADOR_PADRAO = {
     nome: 'Paulo Augusto Silva Borges',
     empresa: 'SaaS Master Tecnologia',
     email: 'pauloaugusto.silvaborges@gmail.com',
-    whatsapp: '62999999999',
+    whatsapp: '62999676874',
     documento: '',
     cidadeUf: 'Goiânia - GO',
     website: '',
@@ -360,7 +360,7 @@ window.fazerLogoutMaster = fazerLogoutMaster;
 function navegarMaster(view) {
     viewAtual = view;
 
-    const views = ['lojas', 'leads', 'planos', 'contratos', 'relatorios', 'sistemas'];
+    const views = ['lojas', 'leads', 'planos', 'contratos', 'relatorios', 'sistemas', 'suporte'];
     views.forEach(v => {
         const elView = document.getElementById(`view-${v}`);
         const elBtn = document.getElementById(`nav-btn-${v}`);
@@ -376,6 +376,8 @@ function navegarMaster(view) {
     if (activeBtn) {
         if (view === 'leads') {
             activeBtn.className = 'w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-bold transition-all bg-rose-500/15 text-rose-400 border border-rose-500/30';
+        } else if (view === 'suporte') {
+            activeBtn.className = 'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all bg-sky-500/15 text-sky-400 border border-sky-500/30';
         } else {
             activeBtn.className = 'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all bg-amber-500/15 text-amber-400 border border-amber-500/30';
         }
@@ -467,6 +469,10 @@ function navegarMaster(view) {
             `;
         }
         renderizarGridSistemasMaster();
+    } else if (view === 'suporte') {
+        if (elTitulo) elTitulo.innerHTML = '<i class="fa-solid fa-headset text-sky-400"></i> Central de Suporte & Ajuda';
+        if (elAcoes) elAcoes.innerHTML = '';
+        inicializarViewSuporte();
     }
 }
 window.navegarMaster = navegarMaster;
@@ -3827,6 +3833,17 @@ async function salvarPerfilFundadorMaster(e) {
 
         await firebase.firestore().collection('saas_config').doc('fundador').set(dadosNovos, { merge: true });
 
+        // Espelha o WhatsApp de suporte publicamente em 'sistemas_saas/fc_gestao' e 'planos/config_suporte'
+        try {
+            await firebase.firestore().collection('sistemas_saas').doc('fc_gestao').set({
+                whatsappSuporte: dadosNovos.whatsapp,
+                nomeSuporte: dadosNovos.nome,
+                emailSuporte: dadosNovos.email,
+                pixChaveSuporte: dadosNovos.pixChave,
+                ultimaAtualizacao: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+        } catch(e) { console.warn('Aviso ao espelhar em sistemas_saas:', e); }
+
         dadosFundadorMaster = { ...dadosFundadorMaster, ...dadosNovos };
         atualizarVisualSidebarFundador();
 
@@ -5133,3 +5150,423 @@ window.addEventListener('load', () => {
     setTimeout(mostrarBotoesInstalarMaster, 1200);
 });
 
+
+// ==========================================================================
+// MÓDULO DE SUPORTE — Central de Ajuda com FAQ, Chat IA e WhatsApp
+// ==========================================================================
+
+// Base de perguntas frequentes do SaaS Master
+const FAQ_SUPORTE = [
+    // ─── LOJAS ────────────────────────────────────────────────────────────
+    {
+        id: 'faq_1', categoria: 'Lojas',
+        pergunta: 'Como cadastrar uma nova loja no sistema?',
+        resposta: 'Clique em "Cadastrar Nova Loja" no menu lateral ou no botão "+ Nova Loja" no cabeçalho da tela de Lojas. Preencha os dados da empresa, escolha o sistema (FC-Gestão, FC-Food ou FC-Barber), defina o plano e o status. Após salvar, as credenciais de acesso serão geradas automaticamente.'
+    },
+    {
+        id: 'faq_2', categoria: 'Lojas',
+        pergunta: 'Como bloquear ou desbloquear o acesso de uma loja?',
+        resposta: 'Abra o Dossiê da loja clicando no botão "Ver Dossiê" na tabela de lojas. No painel do dossiê, localize o campo "Status" e altere para BLOQUEADO ou ATIVO conforme necessário. O acesso é restrito em tempo real.'
+    },
+    {
+        id: 'faq_3', categoria: 'Lojas',
+        pergunta: 'Como editar os dados cadastrais de uma loja?',
+        resposta: 'Acesse o Dossiê da loja (botão "Ver Dossiê" na tabela). Dentro do dossiê, você pode editar: nome da empresa, WhatsApp, e-mail de acesso, senha, plano contratado, data de vencimento, valor da mensalidade e chave Gemini IA. Após editar, clique em "Salvar Alterações".'
+    },
+    {
+        id: 'faq_4', categoria: 'Lojas',
+        pergunta: 'Como registrar um pagamento e renovar o acesso de uma loja?',
+        resposta: 'No Dossiê da loja, localize a seção "Histórico de Pagamentos" e clique em "+ Registrar Pagamento". Informe a data de pagamento e o valor. O sistema atualiza automaticamente a data de vencimento e o status para ATIVO.'
+    },
+    {
+        id: 'faq_5', categoria: 'Lojas',
+        pergunta: 'Uma loja com status BLOQUEADO ainda consegue acessar o sistema?',
+        resposta: 'Não. Lojas com status BLOQUEADO são impedidas de acessar o sistema no login. O usuário vê uma mensagem de acesso suspenso e é orientado a entrar em contato com o suporte para regularizar a situação.'
+    },
+    {
+        id: 'faq_6', categoria: 'Lojas',
+        pergunta: 'Como liberar ou restringir módulos específicos para uma loja?',
+        resposta: 'No Dossiê da loja, role até a seção "Módulos Liberados". Marque ou desmarque os módulos conforme desejado (PDV, Fiscal, Financeiro, IA, etc.) e salve. Isso permite personalizar o acesso além do plano padrão.'
+    },
+    // ─── COBRANÇA ──────────────────────────────────────────────────────────
+    {
+        id: 'faq_7', categoria: 'Cobrança',
+        pergunta: 'Como enviar uma cobrança pelo WhatsApp para uma loja?',
+        resposta: 'Na tabela de lojas, localize a loja desejada e clique no ícone do WhatsApp (ícone verde na coluna de ações). O sistema monta automaticamente uma mensagem com o valor, vencimento, dados de PIX e instruções de pagamento. Basta confirmar e a mensagem é aberta no WhatsApp.'
+    },
+    {
+        id: 'faq_8', categoria: 'Cobrança',
+        pergunta: 'Como alterar o valor da mensalidade de uma loja?',
+        resposta: 'Acesse o Dossiê da loja e edite o campo "Valor da Mensalidade". Este valor é usado nos contratos e mensagens de cobrança. Salve as alterações para confirmar.'
+    },
+    {
+        id: 'faq_9', categoria: 'Cobrança',
+        pergunta: 'Como atualizar meus dados de PIX para as cobranças?',
+        resposta: 'Clique em "Meus Dados & PIX" no menu lateral ou no avatar do seu perfil no topo da sidebar. Você pode editar: tipo de chave PIX (CPF, CNPJ, e-mail, telefone ou chave aleatória), a chave em si, o nome do titular e o banco. Esses dados aparecem automaticamente nas mensagens de cobrança e contratos.'
+    },
+    // ─── PLANOS ────────────────────────────────────────────────────────────
+    {
+        id: 'faq_10', categoria: 'Planos',
+        pergunta: 'Como alterar o plano de uma loja?',
+        resposta: 'Acesse o Dossiê da loja e procure o campo "Plano Contratado". Selecione o novo plano no dropdown e clique em "Salvar Alterações". Os módulos liberados serão atualizados automaticamente com base no novo plano.'
+    },
+    {
+        id: 'faq_11', categoria: 'Planos',
+        pergunta: 'Qual a diferença entre os planos disponíveis?',
+        resposta: 'Os planos variam em número de usuários, módulos liberados e acesso à IA Gemini: <br>• <strong>Start Express (R$69,90)</strong> — 2 usuários, PDV Direto, até 500 produtos.<br>• <strong>Varejo Balcão (R$99,90)</strong> — 4 usuários, Pré-venda + Caixa Central.<br>• <strong>Fiscal & Vendas (R$119,90)</strong> — 3 usuários + emissão de NF-e.<br>• <strong>Profissional (R$169,90)</strong> — 5 usuários, financeiro completo, DRE.<br>• <strong>Enterprise (R$249,90)</strong> — 10 usuários + IA Gemini + relatórios preditivos.<br>• <strong>Ultra Completo (R$349,90)</strong> — Ilimitado, todos os módulos + suporte VIP.'
+    },
+    {
+        id: 'faq_12', categoria: 'Planos',
+        pergunta: 'Como criar um novo plano personalizado?',
+        resposta: 'Acesse a tela "Gestão de Planos" no menu lateral e clique em "+ Novo Plano". Defina nome, preço, sistema, ciclo de cobrança, limite de usuários e os módulos que estarão disponíveis. O plano ficará disponível para seleção nos dossiês das lojas.'
+    },
+    // ─── ACESSO AO SISTEMA ─────────────────────────────────────────────────
+    {
+        id: 'faq_13', categoria: 'Acesso',
+        pergunta: 'Como redefinir a senha de acesso de uma loja?',
+        resposta: 'No Dossiê da loja, localize o campo "Senha de Acesso" e altere para a nova senha desejada. Clique em "Salvar Alterações". Você pode então copiar as credenciais pelo botão de cópia e enviar ao cliente via WhatsApp.'
+    },
+    {
+        id: 'faq_14', categoria: 'Acesso',
+        pergunta: 'O que acontece quando a loja está em status TRIAL?',
+        resposta: 'O status TRIAL (em teste) permite acesso completo ao sistema por um período determinado. Após o período de teste, a loja deve ser convertida para ATIVO (mediante pagamento) ou BLOQUEADA. Você pode acompanhar os trials na tela de Visão Geral.'
+    },
+    {
+        id: 'faq_15', categoria: 'Acesso',
+        pergunta: 'Como gerar e imprimir um contrato para uma loja?',
+        resposta: 'Acesse "Contratos & Termos" no menu lateral. Selecione a loja no dropdown, revise as informações do contrato que são preenchidas automaticamente (dados do fundador, da loja, plano e valores) e clique em "Imprimir / PDF". O contrato é gerado em formato A4 profissional.'
+    },
+    // ─── IA GEMINI ─────────────────────────────────────────────────────────
+    {
+        id: 'faq_16', categoria: 'IA Gemini',
+        pergunta: 'Como configurar a chave da IA Gemini no SaaS Master?',
+        resposta: 'Clique em "Chave IA Gemini Global" no menu lateral. Cole a sua chave da API do Google AI Studio (formato: AIza...) e salve. Esta chave é usada pelo assistente de suporte e pelos relatórios com análise preditiva. Cada loja também pode ter sua própria chave, configurada no dossiê.'
+    },
+    {
+        id: 'faq_17', categoria: 'IA Gemini',
+        pergunta: 'O que o assistente de IA consegue fazer no sistema?',
+        resposta: 'O assistente IA Gemini pode: gerar análises preditivas de vendas, identificar padrões de faturamento, responder perguntas sobre o SaaS, ajudar a interpretar relatórios financeiros (DRE, Raio-X), sugerir estratégias de cobrança e explicar funcionalidades do sistema.'
+    },
+    // ─── CONTA & PERFIL ────────────────────────────────────────────────────
+    {
+        id: 'faq_18', categoria: 'Conta & Perfil',
+        pergunta: 'Como atualizar meu WhatsApp de contato/suporte?',
+        resposta: 'Clique em "Meus Dados & PIX" no menu lateral. Atualize o campo "WhatsApp" com seu número incluindo DDD (apenas dígitos, Ex: 62999999999). Após salvar, o botão de suporte desta tela e as mensagens de cobrança utilizarão o número atualizado automaticamente.'
+    },
+    {
+        id: 'faq_19', categoria: 'Conta & Perfil',
+        pergunta: 'Como ver as lojas que estão em atraso no pagamento?',
+        resposta: 'Na tela "Relatórios & Métricas", use o filtro de vencimento para visualizar apenas as lojas em atraso. Na tela principal de Lojas, você pode filtrar pelo status "Em Atraso / Pendente" usando o seletor de status. Os KPIs no topo também exibem o total de lojas em atraso.'
+    },
+    {
+        id: 'faq_20', categoria: 'Conta & Perfil',
+        pergunta: 'Como exportar os dados das lojas para Excel?',
+        resposta: 'Acesse "Relatórios & Métricas" no menu lateral e clique no botão "Exportar Excel" no cabeçalho. Um arquivo CSV será gerado com todas as informações das lojas: nome, status, plano, valor, vencimento, e-mail e WhatsApp. Para exportar apenas os leads, acesse "Possíveis Clientes" e clique em "Exportar Leads".'
+    }
+];
+
+// Categoria ativa no filtro
+let suporteCategoriaAtual = 'Todos';
+let supIaChatHistory = [];
+
+// ==========================================================================
+// INICIALIZAR VIEW DE SUPORTE
+// ==========================================================================
+function inicializarViewSuporte() {
+    suporteCategoriaAtual = 'Todos';
+    renderizarCategoriasSuporte();
+    filtrarFAQ();
+    verificarChaveIASuporte();
+    atualizarWppDisplay();
+}
+window.inicializarViewSuporte = inicializarViewSuporte;
+
+// ==========================================================================
+// RENDERIZAR PILLS DE CATEGORIA
+// ==========================================================================
+function renderizarCategoriasSuporte() {
+    const container = document.getElementById('suporte-categorias');
+    if (!container) return;
+
+    const categorias = ['Todos', ...new Set(FAQ_SUPORTE.map(f => f.categoria))];
+    const cores = {
+        'Todos':        'bg-sky-500/20 text-sky-300 border-sky-500/40 hover:bg-sky-500/30',
+        'Lojas':        'bg-blue-500/20 text-blue-300 border-blue-500/40 hover:bg-blue-500/30',
+        'Cobrança':     'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30',
+        'Planos':       'bg-purple-500/20 text-purple-300 border-purple-500/40 hover:bg-purple-500/30',
+        'Acesso':       'bg-rose-500/20 text-rose-300 border-rose-500/40 hover:bg-rose-500/30',
+        'IA Gemini':    'bg-indigo-500/20 text-indigo-300 border-indigo-500/40 hover:bg-indigo-500/30',
+        'Conta & Perfil':'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30',
+    };
+
+    container.innerHTML = categorias.map(cat => {
+        const ativa = cat === suporteCategoriaAtual;
+        const base = cores[cat] || 'bg-slate-700/50 text-slate-300 border-slate-600/50';
+        const activeCls = ativa ? 'ring-2 ring-sky-400/50 font-black' : 'font-semibold';
+        return `<button onclick="selecionarCategoriaSuporte('${cat}')" class="px-4 py-1.5 text-xs rounded-full border transition-all ${base} ${activeCls}">${cat}</button>`;
+    }).join('');
+}
+
+function selecionarCategoriaSuporte(cat) {
+    suporteCategoriaAtual = cat;
+    renderizarCategoriasSuporte();
+    filtrarFAQ();
+}
+window.selecionarCategoriaSuporte = selecionarCategoriaSuporte;
+
+// ==========================================================================
+// FILTRAR E RENDERIZAR FAQs
+// ==========================================================================
+function filtrarFAQ() {
+    const busca = (document.getElementById('suporte-busca')?.value || '').toLowerCase().trim();
+    const lista = document.getElementById('suporte-faq-lista');
+    if (!lista) return;
+
+    let itens = FAQ_SUPORTE;
+
+    // Filtro de categoria
+    if (suporteCategoriaAtual !== 'Todos') {
+        itens = itens.filter(f => f.categoria === suporteCategoriaAtual);
+    }
+
+    // Filtro de busca
+    if (busca) {
+        itens = itens.filter(f =>
+            f.pergunta.toLowerCase().includes(busca) ||
+            f.resposta.toLowerCase().includes(busca) ||
+            f.categoria.toLowerCase().includes(busca)
+        );
+    }
+
+    if (itens.length === 0) {
+        lista.innerHTML = `
+            <div class="bg-[#0f172a] rounded-2xl border border-slate-800 p-8 text-center">
+                <i class="fa-solid fa-magnifying-glass text-3xl text-slate-600 mb-3"></i>
+                <p class="text-slate-400 font-semibold">Nenhum resultado encontrado</p>
+                <p class="text-xs text-slate-500 mt-1">Tente palavras diferentes ou use o chat com IA abaixo</p>
+            </div>`;
+        return;
+    }
+
+    const highlight = (txt) => {
+        if (!busca) return txt;
+        const re = new RegExp(`(${busca.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+        return txt.replace(re, '<mark class="bg-amber-400/30 text-amber-200 rounded px-0.5">$1</mark>');
+    };
+
+    const coresCategoria = {
+        'Lojas':         'text-blue-400',
+        'Cobrança':      'text-amber-400',
+        'Planos':        'text-purple-400',
+        'Acesso':        'text-rose-400',
+        'IA Gemini':     'text-indigo-400',
+        'Conta & Perfil':'text-emerald-400',
+    };
+
+    lista.innerHTML = itens.map(f => {
+        const corCat = coresCategoria[f.categoria] || 'text-sky-400';
+        return `
+        <div class="bg-[#0f172a] rounded-2xl border border-slate-800 shadow-lg overflow-hidden group transition-all hover:border-slate-700">
+            <button onclick="toggleFAQ('${f.id}')" class="w-full text-left px-5 py-4 flex items-start gap-4">
+                <div class="w-8 h-8 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center shrink-0 mt-0.5 group-hover:border-sky-500/40 transition-colors">
+                    <i class="fa-solid fa-circle-question text-slate-500 group-hover:text-sky-400 transition-colors text-sm"></i>
+                </div>
+                <div class="flex-1">
+                    <span class="text-[10px] font-black uppercase tracking-wider ${corCat}">${f.categoria}</span>
+                    <p class="text-sm font-bold text-white mt-0.5 leading-snug">${highlight(f.pergunta)}</p>
+                </div>
+                <i class="fa-solid fa-chevron-down text-slate-500 text-xs shrink-0 mt-1.5 transition-transform duration-200" id="chevron-${f.id}"></i>
+            </button>
+            <div id="resp-${f.id}" class="hidden px-5 pb-5">
+                <div class="border-t border-slate-800 pt-4 pl-12">
+                    <p class="text-sm text-slate-300 leading-relaxed">${highlight(f.resposta)}</p>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+}
+window.filtrarFAQ = filtrarFAQ;
+
+function toggleFAQ(id) {
+    const resp = document.getElementById(`resp-${id}`);
+    const chev = document.getElementById(`chevron-${id}`);
+    if (!resp) return;
+    const isOpen = !resp.classList.contains('hidden');
+    resp.classList.toggle('hidden');
+    if (chev) chev.style.transform = isOpen ? '' : 'rotate(180deg)';
+}
+window.toggleFAQ = toggleFAQ;
+
+// ==========================================================================
+// VERIFICAR CHAVE IA E ATUALIZAR STATUS
+// ==========================================================================
+async function verificarChaveIASuporte() {
+    const statusEl = document.getElementById('suporte-ia-status');
+    if (!statusEl) return;
+    try {
+        const doc = await firebase.firestore().collection('saas_config').doc('gemini_config').get();
+        const key = doc.exists ? doc.data().geminiKeyMaster : '';
+        if (key && key.length > 10) {
+            statusEl.className = 'text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30';
+            statusEl.innerHTML = '<i class="fa-solid fa-circle-check mr-1"></i>IA Ativa';
+        } else {
+            statusEl.className = 'text-[10px] font-bold px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30';
+            statusEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1"></i>Chave não configurada';
+        }
+    } catch(e) {
+        statusEl.className = 'text-[10px] font-bold px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700';
+        statusEl.innerHTML = 'Status desconhecido';
+    }
+}
+
+// ==========================================================================
+// CHAT COM IA GEMINI
+// ==========================================================================
+async function enviarPerguntaSuporteIA() {
+    const input = document.getElementById('suporte-chat-input');
+    const msgContainer = document.getElementById('suporte-chat-mensagens');
+    if (!input || !msgContainer) return;
+
+    const pergunta = input.value.trim();
+    if (!pergunta) return;
+
+    input.value = '';
+    input.disabled = true;
+
+    // Adiciona mensagem do usuário
+    msgContainer.innerHTML += `
+        <div class="flex gap-3 justify-end">
+            <div class="bg-sky-600/30 border border-sky-500/20 rounded-2xl rounded-tr-none px-4 py-3 max-w-lg">
+                <p class="text-xs text-slate-100 leading-relaxed">${pergunta.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</p>
+            </div>
+            <div class="w-8 h-8 rounded-lg bg-sky-500/20 border border-sky-500/30 text-sky-400 flex items-center justify-center text-xs shrink-0">
+                <i class="fa-solid fa-user"></i>
+            </div>
+        </div>`;
+
+    // Loading
+    const loadId = 'sup-load-' + Date.now();
+    msgContainer.innerHTML += `
+        <div class="flex gap-3" id="${loadId}">
+            <div class="w-8 h-8 rounded-lg bg-purple-500/20 border border-purple-500/30 text-purple-400 flex items-center justify-center text-xs shrink-0">
+                <i class="fa-solid fa-robot"></i>
+            </div>
+            <div class="bg-slate-800/80 rounded-2xl rounded-tl-none px-4 py-3">
+                <div class="flex gap-1.5 items-center h-5">
+                    <span class="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style="animation-delay:0ms"></span>
+                    <span class="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style="animation-delay:150ms"></span>
+                    <span class="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style="animation-delay:300ms"></span>
+                </div>
+            </div>
+        </div>`;
+    msgContainer.scrollTop = msgContainer.scrollHeight;
+
+    try {
+        // Busca chave IA
+        const doc = await firebase.firestore().collection('saas_config').doc('gemini_config').get();
+        const apiKey = doc.exists ? doc.data().geminiKeyMaster : '';
+        if (!apiKey || apiKey.length < 10) {
+            throw new Error('Chave Gemini não configurada. Acesse "Chave IA Gemini Global" no menu lateral para configurar.');
+        }
+
+        // Contexto do sistema
+        const sistemasNomes = (window.listaSistemas || SISTEMAS_PADRAO).map(s => s.nome).join(', ');
+        const planosNomes = (window.listaPlanos || PLANOS_PADRAO).map(p => `${p.nome} (R$${p.preco?.toFixed(2)})`).join(', ');
+        const totalLojas = (window.listaLojas || []).length;
+
+        const systemPrompt = `Você é o assistente de suporte do SaaS Master, um sistema de gestão SaaS para pequenas e médias empresas.
+Ecosistema de softwares: ${sistemasNomes}.
+Planos disponíveis: ${planosNomes}.
+Total de lojas cadastradas: ${totalLojas}.
+Funcionalidades: gestão de lojas, planos e assinaturas, cobranças via WhatsApp, contratos digitais, relatórios financeiros, IA com Gemini, módulos de PDV, estoque, fiscal (NF-e), financeiro e muito mais.
+Responda de forma clara, objetiva e amigável em português. Use formatação com negrito quando útil. Se não souber algo específico, oriente o usuário a entrar em contato via WhatsApp.`;
+
+        supIaChatHistory.push({ role: 'user', parts: [{ text: pergunta }] });
+
+        const payload = {
+            system_instruction: { parts: [{ text: systemPrompt }] },
+            contents: supIaChatHistory
+        };
+
+        const resp = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+            { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }
+        );
+
+        if (!resp.ok) throw new Error(`Erro da API: ${resp.status} ${resp.statusText}`);
+
+        const data = await resp.json();
+        const resposta = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Não consegui gerar uma resposta. Tente novamente.';
+
+        supIaChatHistory.push({ role: 'model', parts: [{ text: resposta }] });
+
+        // Remove loading e adiciona resposta
+        const loadEl = document.getElementById(loadId);
+        if (loadEl) loadEl.remove();
+
+        // Formata texto com markdown básico
+        const formatado = resposta
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/\n/g, '<br>');
+
+        msgContainer.innerHTML += `
+            <div class="flex gap-3">
+                <div class="w-8 h-8 rounded-lg bg-purple-500/20 border border-purple-500/30 text-purple-400 flex items-center justify-center text-xs shrink-0">
+                    <i class="fa-solid fa-robot"></i>
+                </div>
+                <div class="bg-slate-800/80 rounded-2xl rounded-tl-none px-4 py-3 max-w-xl">
+                    <p class="text-xs text-slate-200 leading-relaxed">${formatado}</p>
+                </div>
+            </div>`;
+
+    } catch (err) {
+        const loadEl = document.getElementById(loadId);
+        if (loadEl) loadEl.remove();
+
+        msgContainer.innerHTML += `
+            <div class="flex gap-3">
+                <div class="w-8 h-8 rounded-lg bg-red-500/20 border border-red-500/30 text-red-400 flex items-center justify-center text-xs shrink-0">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                </div>
+                <div class="bg-red-900/20 border border-red-800/40 rounded-2xl rounded-tl-none px-4 py-3 max-w-xl">
+                    <p class="text-xs text-red-300 leading-relaxed"><strong>Erro:</strong> ${err.message}</p>
+                </div>
+            </div>`;
+    } finally {
+        input.disabled = false;
+        input.focus();
+        msgContainer.scrollTop = msgContainer.scrollHeight;
+    }
+}
+window.enviarPerguntaSuporteIA = enviarPerguntaSuporteIA;
+
+// ==========================================================================
+// ATUALIZAR DISPLAY DO WHATSAPP DO FUNDADOR
+// ==========================================================================
+function atualizarWppDisplay() {
+    const el = document.getElementById('suporte-wpp-numero');
+    if (!el) return;
+    const wpp = dadosFundadorMaster?.whatsapp || '';
+    if (wpp) {
+        const fmt = wpp.replace(/(\d{2})(\d{2})(\d{4,5})(\d{4})/, '($1) $2 $3-$4');
+        el.innerHTML = `<i class="fa-brands fa-whatsapp mr-1"></i> +55 ${fmt}`;
+    } else {
+        el.innerHTML = '<span class="text-slate-500">Número não configurado em "Meus Dados & PIX"</span>';
+    }
+}
+
+// ==========================================================================
+// ABRIR WHATSAPP DO FUNDADOR
+// ==========================================================================
+function abrirSuporteWhatsApp() {
+    const wpp = dadosFundadorMaster?.whatsapp || '';
+    if (!wpp) {
+        showToast('WhatsApp não configurado. Acesse "Meus Dados & PIX" para cadastrar seu número.', 'error');
+        return;
+    }
+    const numero = wpp.replace(/\D/g, '');
+    const msg = encodeURIComponent('Olá! Preciso de suporte com o sistema SaaS Master. Pode me ajudar?');
+    window.open(`https://wa.me/55${numero}?text=${msg}`, '_blank');
+}
+window.abrirSuporteWhatsApp = abrirSuporteWhatsApp;

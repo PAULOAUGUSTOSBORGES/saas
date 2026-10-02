@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR" class="dark" data-theme="dark">
 <head>
     <meta charset="UTF-8">
@@ -124,6 +124,10 @@
 
                 <button id="nav-btn-sistemas" onclick="navegarMaster('sistemas')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium hover:bg-slate-800 text-slate-300 transition-colors">
                     <i class="fa-solid fa-cubes w-5 text-center text-cyan-400"></i> Ecossistema Multi-Sistemas
+                </button>
+
+                <button id="nav-btn-suporte" onclick="navegarMaster('suporte')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium hover:bg-sky-500/10 text-sky-400 border border-sky-500/20 transition-colors">
+                    <i class="fa-solid fa-headset w-5 text-center text-sky-400"></i> Central de Suporte
                 </button>
 
                 <p class="px-3 text-[10px] font-bold text-slate-400 uppercase mt-5 mb-1">Configurações & Ações</p>
@@ -2185,6 +2189,94 @@
             </form>
         </div>
     </div>
+
+
+                <!-- ==================================================== -->
+                <!-- VIEW 7: CENTRAL DE SUPORTE                            -->
+                <!-- ==================================================== -->
+                <div id="view-suporte" class="space-y-6 hidden">
+
+                    <!-- BUSCADOR DE FAQ -->
+                    <div class="bg-[#0f172a] rounded-2xl border border-slate-800 shadow-xl p-6">
+                        <div class="flex items-center gap-4 mb-5">
+                            <div class="w-12 h-12 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-sky-400 flex items-center justify-center text-xl">
+                                <i class="fa-solid fa-headset"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-black text-white">Central de Suporte</h3>
+                                <p class="text-xs text-slate-400">Encontre respostas rápidas ou converse com nosso assistente de IA</p>
+                            </div>
+                        </div>
+                        <div class="relative">
+                            <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400 text-sm"></i>
+                            <input type="text" id="suporte-busca" oninput="filtrarFAQ()" placeholder="Busque por palavras-chave... Ex: bloquear loja, plano, WhatsApp, senha..." class="w-full pl-11 pr-4 py-3 bg-slate-900 border border-slate-700 rounded-2xl text-sm text-white outline-none focus:border-sky-400 transition-colors placeholder-slate-500 font-medium">
+                        </div>
+                    </div>
+
+                    <!-- PILLS DE CATEGORIA -->
+                    <div class="flex flex-wrap gap-2" id="suporte-categorias">
+                        <!-- Renderizado via JS -->
+                    </div>
+
+                    <!-- CARDS FAQ -->
+                    <div id="suporte-faq-lista" class="space-y-3">
+                        <!-- Renderizado via JS -->
+                    </div>
+
+                    <!-- CHAT COM IA -->
+                    <div class="bg-[#0f172a] rounded-2xl border border-slate-800 shadow-xl overflow-hidden">
+                        <div class="flex items-center gap-3 p-5 border-b border-slate-800">
+                            <div class="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center">
+                                <i class="fa-solid fa-robot text-lg"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-black text-white">Assistente IA (Gemini)</h4>
+                                <p class="text-[11px] text-slate-400">Pergunte qualquer coisa sobre o sistema — responderei com base no seu SaaS</p>
+                            </div>
+                            <div class="ml-auto">
+                                <span id="suporte-ia-status" class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700">Verificando IA...</span>
+                            </div>
+                        </div>
+                        <!-- Área de mensagens -->
+                        <div id="suporte-chat-mensagens" class="h-72 overflow-y-auto p-5 space-y-3 custom-scrollbar bg-slate-950/30">
+                            <div class="flex gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-purple-500/20 border border-purple-500/30 text-purple-400 flex items-center justify-center text-xs shrink-0">
+                                    <i class="fa-solid fa-robot"></i>
+                                </div>
+                                <div class="bg-slate-800/80 rounded-2xl rounded-tl-none px-4 py-3 max-w-xl">
+                                    <p class="text-xs text-slate-200 leading-relaxed">Olá! Sou o assistente do <strong>SaaS Master</strong>. Pode me perguntar sobre cadastro de lojas, planos, cobranças, módulos do sistema, configuração de IA e muito mais. Como posso ajudar?</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Input do chat -->
+                        <div class="p-4 border-t border-slate-800 flex gap-3">
+                            <input type="text" id="suporte-chat-input" placeholder="Digite sua dúvida e pressione Enter..." class="flex-1 px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white outline-none focus:border-purple-400 placeholder-slate-500 transition-colors" onkeydown="if(event.key==='Enter' && !event.shiftKey){ event.preventDefault(); enviarPerguntaSuporteIA(); }">
+                            <button onclick="enviarPerguntaSuporteIA()" class="px-4 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-purple-500/20 flex items-center gap-2 shrink-0">
+                                <i class="fa-solid fa-paper-plane"></i>
+                                <span class="hidden sm:inline">Enviar</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- CONTATO WHATSAPP -->
+                    <div class="bg-gradient-to-br from-emerald-900/40 to-green-900/20 rounded-2xl border border-emerald-700/40 shadow-xl p-6">
+                        <div class="flex flex-col sm:flex-row items-center gap-5">
+                            <div class="w-16 h-16 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 flex items-center justify-center text-3xl shrink-0">
+                                <i class="fa-brands fa-whatsapp"></i>
+                            </div>
+                            <div class="flex-1 text-center sm:text-left">
+                                <h4 class="text-base font-black text-white mb-1">Ainda com dúvidas? Fale diretamente comigo!</h4>
+                                <p class="text-sm text-slate-300">Atendimento humano via WhatsApp — respondemos o mais rápido possível durante o horário comercial.</p>
+                                <p class="text-xs text-emerald-400 font-bold mt-1" id="suporte-wpp-numero">Carregando número...</p>
+                            </div>
+                            <button onclick="abrirSuporteWhatsApp()" class="px-6 py-3 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-black text-sm rounded-2xl transition-all shadow-lg shadow-emerald-500/30 flex items-center gap-3 shrink-0">
+                                <i class="fa-brands fa-whatsapp text-lg"></i>
+                                Abrir WhatsApp
+                            </button>
+                        </div>
+                    </div>
+
+                </div><!-- /view-suporte -->
 
     <!-- Scripts do Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js"></script>
