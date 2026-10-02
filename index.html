@@ -64,16 +64,22 @@
 
     <div class="flex w-full h-full relative">
         
+        <!-- OVERLAY MOBILE -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-slate-900/60 z-30 hidden md:hidden transition-opacity" onclick="toggleMenu()"></div>
+
         <!-- SIDEBAR MASTER -->
-        <aside class="w-64 bg-[#0f172a] border-r border-slate-800 flex flex-col h-full shrink-0 shadow-2xl z-40 no-print">
-            <div class="p-5 flex items-center gap-3 border-b border-slate-800">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-300 text-slate-950 flex items-center justify-center text-xl font-bold shadow-lg shadow-amber-500/20">
-                    <i class="fa-solid fa-crown"></i>
+        <aside id="sidebar-master" class="fixed md:relative inset-y-0 left-0 w-64 bg-[#0f172a] border-r border-slate-800 flex flex-col h-full shrink-0 shadow-2xl z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out no-print">
+            <div class="p-5 flex items-center justify-between border-b border-slate-800">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-300 text-slate-950 flex items-center justify-center text-xl font-bold shadow-lg shadow-amber-500/20">
+                        <i class="fa-solid fa-crown"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-extrabold text-white text-base leading-tight tracking-wide">SaaS Master</h1>
+                        <p class="text-[10px] text-amber-400 font-bold uppercase tracking-wider">Fundador</p>
+                    </div>
                 </div>
-                <div>
-                    <h1 class="font-extrabold text-white text-base leading-tight tracking-wide">SaaS Master</h1>
-                    <p class="text-[10px] text-amber-400 font-bold uppercase tracking-wider">Fundador do Sistema</p>
-                </div>
+                <button onclick="toggleMenu()" class="md:hidden text-slate-400 hover:text-white text-2xl"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
             <!-- PERFIL DO FUNDADOR -->
@@ -146,9 +152,10 @@
         <main class="flex-1 flex flex-col h-full w-full overflow-hidden">
             
             <!-- HEADER GLOBAL -->
-            <header class="h-16 border-b border-slate-800/80 bg-[#0f172a]/60 backdrop-blur-md flex items-center justify-between px-6 shrink-0 no-print">
+            <header class="h-16 border-b border-slate-800/80 bg-[#0f172a]/60 backdrop-blur-md flex items-center justify-between px-4 md:px-6 shrink-0 no-print">
                 <div class="flex items-center gap-3">
-                    <h2 class="text-xl font-extrabold text-white flex items-center gap-2" id="header-titulo-view">
+                    <button onclick="toggleMenu()" class="md:hidden text-slate-400 hover:text-white text-xl mr-2"><i class="fa-solid fa-bars"></i></button>
+                    <h2 class="text-lg md:text-xl font-extrabold text-white flex items-center gap-2" id="header-titulo-view">
                         <i class="fa-solid fa-users-gear text-amber-400"></i> Gestão de Assinaturas & Lojas
                     </h2>
                 </div>
@@ -2186,5 +2193,15 @@
     
     <script src="config_banco.js?v=202609191105"></script>
     <script src="master.js?v=20260923101800"></script>
+    <script>
+        function toggleMenu() {
+            const sidebar = document.getElementById('sidebar-master');
+            const overlay = document.getElementById('sidebar-overlay');
+            if(sidebar && overlay) {
+                sidebar.classList.toggle('-translate-x-full');
+                overlay.classList.toggle('hidden');
+            }
+        }
+    </script>
 </body>
 </html>
