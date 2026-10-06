@@ -1,4 +1,4 @@
-﻿// ==========================================================================
+// ==========================================================================
 // MASTER.JS - Painel do Fundador SaaS (Sistema Master Independente)
 // Gestão de Lojas, Dossiê Completo, Catálogo de Planos e Emissor de Contratos
 // Fundador: pauloaugusto.silvaborges@gmail.com
@@ -45,7 +45,8 @@ const SISTEMAS_PADRAO = [
         id: 'fc_gestao',
         nome: 'FC-Gestão',
         ramo: 'Móveis & Varejo',
-        icone: 'fa-store',
+        icone: 'fa-layer-group',
+        logoUrl: 'icons/icone_oficial.png',
         cor: 'amber',
         url: '../FC-Gest-o/sistema/',
         status: 'ATIVO',
@@ -736,7 +737,10 @@ function renderizarTabelaLojasMaster() {
             cyan: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/25'
         };
         const badgeCor = corMap[sisObj.cor] || corMap.amber;
-        const badgeSistema = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black tracking-wide border ${badgeCor}"><i class="fa-solid ${sisObj.icone || 'fa-cubes'} text-[10px]"></i> ${sisObj.nome}</span>`;
+        const iconeTag = (sistemaId === 'fc_gestao' || sisObj.id === 'fc_gestao')
+            ? `<img src="icons/icone_oficial.png" class="w-3.5 h-3.5 rounded object-contain inline-block" alt="Logo">`
+            : `<i class="fa-solid ${sisObj.icone || 'fa-cubes'} text-[10px]"></i>`;
+        const badgeSistema = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black tracking-wide border ${badgeCor}">${iconeTag} ${sisObj.nome}</span>`;
 
         return `
             <tr class="hover:bg-slate-800/40 transition-colors">
@@ -2802,7 +2806,7 @@ function renderizarGridPlanosMaster() {
                 <div>
                     <div class="flex items-center justify-between gap-2 mb-2">
                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider border ${estiloBadge}" title="Sistema vinculado: ${nomeSistema}">
-                            <i class="fa-solid ${iconeSistema}"></i> ${nomeSistema}
+                            ${sisId === 'fc_gestao' ? '<img src="icons/icone_oficial.png" class="w-3.5 h-3.5 rounded object-contain inline-block" alt="Logo">' : `<i class="fa-solid ${iconeSistema}"></i>`} ${nomeSistema}
                         </span>
                         ${plano.ativo !== false ? '<span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">Ativo</span>' : '<span class="text-[10px] font-bold text-slate-400 bg-slate-800 px-2 py-0.5 rounded-full">Inativo</span>'}
                     </div>
@@ -4008,7 +4012,7 @@ function renderizarGridSistemasMaster() {
                 <div>
                     <div class="flex items-start justify-between gap-3 mb-4">
                         <div class="w-14 h-14 rounded-2xl ${estilo.bgIcon} border flex items-center justify-center text-2xl shrink-0 shadow-lg">
-                            <i class="fa-solid ${sis.icone || 'fa-cubes'}"></i>
+                            ${(sis.id === 'fc_gestao' || sis.logoUrl) ? `<img src="${sis.logoUrl || 'icons/icone_oficial.png'}" class="w-10 h-10 rounded-xl object-contain" alt="Logo">` : `<i class="fa-solid ${sis.icone || 'fa-cubes'}"></i>`}
                         </div>
                         <div class="flex items-center gap-1.5">
                             <span class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${estilo.badge}">
