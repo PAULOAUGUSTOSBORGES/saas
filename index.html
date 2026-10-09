@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR" class="dark" data-theme="dark">
 <head>
     <meta charset="UTF-8">
@@ -907,6 +907,38 @@
                             </div>
                         </div>
 
+                        <!-- TIPOS DE NOTAS FISCAIS HABILITADAS PARA ESTA LOJA -->
+                        <div class="bg-purple-950/20 border border-purple-800/40 rounded-2xl p-4 space-y-3">
+                            <div class="flex items-center justify-between border-b border-purple-800/30 pb-2">
+                                <div>
+                                    <h4 class="font-extrabold text-sm text-purple-200 flex items-center gap-2">
+                                        <i class="fa-solid fa-stamp text-purple-400"></i> Tipos de Notas Fiscais Liberadas (Acesso Real)
+                                    </h4>
+                                    <p class="text-[11px] text-slate-400 mt-0.5">Define quais tipos de notas esta empresa tem permissão de emitir no sistema!</p>
+                                </div>
+                                <span class="text-xs font-bold text-purple-300 bg-purple-500/10 px-2.5 py-1 rounded-full border border-purple-500/20">Controle Fiscal</span>
+                            </div>
+
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs text-slate-200 pt-1">
+                                <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-purple-500/40 transition-colors">
+                                    <input type="checkbox" id="dossie-nota-nfce" class="rounded accent-purple-500 scale-110">
+                                    <span class="font-medium">NFC-e (PDV mod. 65)</span>
+                                </label>
+                                <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-purple-500/40 transition-colors">
+                                    <input type="checkbox" id="dossie-nota-nfe" class="rounded accent-purple-500 scale-110">
+                                    <span class="font-medium">NF-e (Venda mod. 55)</span>
+                                </label>
+                                <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-purple-500/40 transition-colors">
+                                    <input type="checkbox" id="dossie-nota-devolucao" class="rounded accent-purple-500 scale-110">
+                                    <span class="font-medium">NF-e Devolução / Estorno</span>
+                                </label>
+                                <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 cursor-pointer hover:border-purple-500/40 transition-colors">
+                                    <input type="checkbox" id="dossie-nota-nfse" class="rounded accent-purple-500 scale-110">
+                                    <span class="font-medium">NFS-e (Serviços)</span>
+                                </label>
+                            </div>
+                        </div>
+
                         <!-- RELATÓRIOS HABILITADOS PARA ESTA LOJA -->
                         <div class="bg-slate-900/80 border border-slate-700/80 rounded-2xl p-4 space-y-3">
                             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-2">
@@ -1555,6 +1587,35 @@
                         </label>
                         <label class="flex items-center gap-2 p-2 rounded-lg bg-slate-900 border border-slate-800 cursor-pointer hover:border-slate-700 col-span-2">
                             <input type="checkbox" id="mod-suporte" class="rounded accent-blue-500" checked> Suporte Prioritário VIP
+                        </label>
+                    </div>
+                </div>
+
+                <!-- TIPOS DE NOTAS FISCAIS PERMITIDAS NO PLANO -->
+                <div class="bg-purple-950/20 border border-purple-800/40 rounded-2xl p-3.5 space-y-2.5">
+                    <div class="flex items-center justify-between border-b border-purple-800/30 pb-1.5">
+                        <label class="font-bold text-xs text-purple-200 flex items-center gap-1.5">
+                            <i class="fa-solid fa-stamp text-purple-400"></i> Tipos de Notas Fiscais Liberadas no Plano:
+                        </label>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">Módulo Fiscal</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400">Selecione quais tipos de documentos fiscais este plano dá direito a emitir:</p>
+                    <div class="grid grid-cols-2 gap-2 text-xs text-slate-200">
+                        <label class="flex items-center gap-2 p-2 rounded-lg bg-slate-900/80 border border-slate-800 cursor-pointer hover:border-purple-500/40">
+                            <input type="checkbox" id="fiscal-tipo-nfce" class="rounded accent-purple-500" checked>
+                            <span><strong>NFC-e</strong> (PDV / Cupom mod. 65)</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2 rounded-lg bg-slate-900/80 border border-slate-800 cursor-pointer hover:border-purple-500/40">
+                            <input type="checkbox" id="fiscal-tipo-nfe" class="rounded accent-purple-500" checked>
+                            <span><strong>NF-e</strong> (Venda Comercial mod. 55)</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2 rounded-lg bg-slate-900/80 border border-slate-800 cursor-pointer hover:border-purple-500/40">
+                            <input type="checkbox" id="fiscal-tipo-devolucao" class="rounded accent-purple-500" checked>
+                            <span><strong>NF-e Devolução</strong> & Estorno</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2 rounded-lg bg-slate-900/80 border border-slate-800 cursor-pointer hover:border-purple-500/40">
+                            <input type="checkbox" id="fiscal-tipo-nfse" class="rounded accent-purple-500">
+                            <span><strong>NFS-e</strong> (Serviços - Goiânia / RPS)</span>
                         </label>
                     </div>
                 </div>

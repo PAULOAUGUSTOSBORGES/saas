@@ -112,6 +112,7 @@ const PLANOS_PADRAO = [
         modeloPDV: 'ambos',
         descricao: 'A suíte total definitiva: 100% de todos os módulos liberados, multiusuários ilimitados, fluxo flexível (PDV Direto ou Caixa Central), IA Gemini irrestrita e suporte VIP 24/7.',
         modulos: ['pdv', 'vendas', 'fiscal', 'estoque', 'financeiro', 'caixa', 'compras', 'relatorios', 'agenda', 'site', 'ia', 'marketing', 'suporte'],
+        notasPermitidas: ['nfce', 'nfe', 'nfe_devolucao', 'nfse'],
         relatoriosPermitidos: [...TODOS_RELATORIOS_SAAS],
         destaque: false,
         ativo: true
@@ -128,6 +129,7 @@ const PLANOS_PADRAO = [
         modeloPDV: 'ambos',
         descricao: 'Pacote avançado com inteligência artificial generativa comercial, relatórios preditivos, suporte a múltiplos PDVs de balcão e caixas centrais.',
         modulos: ['pdv', 'vendas', 'fiscal', 'estoque', 'financeiro', 'caixa', 'compras', 'relatorios', 'agenda', 'site', 'ia', 'marketing', 'suporte'],
+        notasPermitidas: ['nfce', 'nfe', 'nfe_devolucao', 'nfse'],
         relatoriosPermitidos: [...TODOS_RELATORIOS_SAAS],
         destaque: false,
         ativo: true
@@ -144,6 +146,7 @@ const PLANOS_PADRAO = [
         modeloPDV: 'ambos',
         descricao: 'O equilíbrio perfeito: emissão fiscal, gestão financeira completa, DRE, compras XML, catálogo online e escolha flexível entre PDV Direto ou Pré-venda com Caixa.',
         modulos: ['pdv', 'vendas', 'fiscal', 'estoque', 'financeiro', 'caixa', 'compras', 'relatorios', 'agenda', 'site', 'suporte'],
+        notasPermitidas: ['nfce', 'nfe', 'nfe_devolucao', 'nfse'],
         relatoriosPermitidos: ['rel_dre', 'rel_raio_x', 'rel_top_produtos', 'rel_top_clientes', 'rel_historico_vendas', 'rel_comissao', 'rel_vendedores', 'rel_curva_abc', 'rel_kardex', 'rel_top_compras', 'rel_top_fornecedores', 'rel_despesas', 'rel_sugestor_compras', 'rel_evolucao_custos'],
         destaque: true,
         ativo: true
@@ -160,6 +163,7 @@ const PLANOS_PADRAO = [
         modeloPDV: 'ambos',
         descricao: 'Ideal para comércios que precisam emitir notas fiscais eletrônicas com rapidez e segurança tributária, operando com PDV Direto ou Pré-Venda.',
         modulos: ['pdv', 'vendas', 'fiscal', 'estoque', 'caixa', 'suporte'],
+        notasPermitidas: ['nfce', 'nfe', 'nfe_devolucao', 'nfse'],
         relatoriosPermitidos: ['rel_dre', 'rel_top_produtos', 'rel_historico_vendas', 'rel_comissao'],
         destaque: false,
         ativo: true
@@ -176,6 +180,7 @@ const PLANOS_PADRAO = [
         modeloPDV: 'caixa',
         descricao: 'Novo Modelo de Negócio: vendedores atendem e geram pré-vendas/pedidos no balcão e o cliente efetua o pagamento no Caixa Central.',
         modulos: ['pdv', 'vendas', 'estoque', 'caixa', 'suporte'],
+        notasPermitidas: [],
         relatoriosPermitidos: ['rel_top_produtos', 'rel_historico_vendas', 'rel_vendedores', 'rel_comissao'],
         destaque: false,
         ativo: true
@@ -192,6 +197,7 @@ const PLANOS_PADRAO = [
         modeloPDV: 'direto',
         descricao: 'Perfeito para microempresas e MEIs com caixa único de atendimento ágil, recebendo e finalizando a venda diretamente no PDV.',
         modulos: ['pdv', 'vendas', 'estoque', 'caixa', 'suporte'],
+        notasPermitidas: [],
         relatoriosPermitidos: ['rel_top_produtos', 'rel_historico_vendas', 'rel_comissao'],
         destaque: false,
         ativo: true
@@ -1385,6 +1391,19 @@ function selecionarPlanoNoDossie(planoId) {
             if (chk) chk.checked = rels.includes(r);
         });
 
+        // Tipos de notas fiscais permitidas do plano
+        const notasPlano = Array.isArray(plano.notasPermitidas) ? plano.notasPermitidas : (mods.includes('fiscal') ? ['nfce', 'nfe', 'nfe_devolucao', 'nfse'] : []);
+        const mapDossieNotas = {
+            'dossie-nota-nfce': 'nfce',
+            'dossie-nota-nfe': 'nfe',
+            'dossie-nota-devolucao': 'nfe_devolucao',
+            'dossie-nota-nfse': 'nfse'
+        };
+        Object.entries(mapDossieNotas).forEach(([elId, tipo]) => {
+            const chk = document.getElementById(elId);
+            if (chk) chk.checked = notasPlano.includes(tipo);
+        });
+
         // Atualiza modelo operacional do PDV se definido no plano
         if (plano.modeloPDV) {
             const selFluxo = document.getElementById('dossie-ass-fluxo-pdv');
@@ -1480,6 +1499,20 @@ async function abrirDossieEmpresa(empresaId) {
     listaMods.forEach(m => {
         const chk = document.getElementById(`dossie-mod-${m}`);
         if (chk) chk.checked = modulosAtivos.includes(m);
+    });
+
+    // Carrega Tipos de Notas Fiscais Liberadas para esta Loja
+    const notasPadrao = Array.isArray(planoObj?.notasPermitidas) ? planoObj.notasPermitidas : (modulosAtivos.includes('fiscal') ? ['nfce', 'nfe', 'nfe_devolucao', 'nfse'] : []);
+    const notasAtivas = (Array.isArray(loja.notasPermitidas) && loja.notasPermitidas.length > 0) ? loja.notasPermitidas : (loja.configEmpresa?.notasPermitidas || notasPadrao);
+    const mapDossieNotasCarregar = {
+        'dossie-nota-nfce': 'nfce',
+        'dossie-nota-nfe': 'nfe',
+        'dossie-nota-devolucao': 'nfe_devolucao',
+        'dossie-nota-nfse': 'nfse'
+    };
+    Object.entries(mapDossieNotasCarregar).forEach(([elId, tipo]) => {
+        const chk = document.getElementById(elId);
+        if (chk) chk.checked = notasAtivas.includes(tipo);
     });
 
     // Carrega Relatórios Permitidos da Loja (ou padrão do plano se não configurado)
@@ -1677,6 +1710,11 @@ async function salvarAssinaturaPeloDossie(e) {
     const listaMods = ['pdv', 'vendas', 'fiscal', 'estoque', 'financeiro', 'caixa', 'compras', 'relatorios', 'agenda', 'site', 'ia', 'marketing', 'suporte'];
     const modulosLiberados = listaMods.filter(m => document.getElementById(`dossie-mod-${m}`)?.checked);
     const relatoriosPermitidos = TODOS_RELATORIOS_SAAS.filter(r => document.getElementById(`dossie-rel-${r}`)?.checked);
+    const notasPermitidas = [];
+    if (document.getElementById('dossie-nota-nfce')?.checked) notasPermitidas.push('nfce');
+    if (document.getElementById('dossie-nota-nfe')?.checked) notasPermitidas.push('nfe');
+    if (document.getElementById('dossie-nota-devolucao')?.checked) notasPermitidas.push('nfe_devolucao');
+    if (document.getElementById('dossie-nota-nfse')?.checked) notasPermitidas.push('nfse');
     const geminiKey = document.getElementById('dossie-emp-gemini-key')?.value.trim() || '';
 
     try {
@@ -1692,6 +1730,7 @@ async function salvarAssinaturaPeloDossie(e) {
             status: status,
             fluxoPDV: fluxoPDV,
             modulosLiberados: modulosLiberados,
+            notasPermitidas: notasPermitidas,
             relatoriosPermitidos: relatoriosPermitidos,
             geminiKey: geminiKey,
             ultimaAtualizacaoMaster: firebase.firestore.FieldValue.serverTimestamp()
@@ -1703,9 +1742,11 @@ async function salvarAssinaturaPeloDossie(e) {
                 empresa: {
                     plano: plano,
                     geminiKey: geminiKey,
-                    fluxoPDV: fluxoPDV
+                    fluxoPDV: fluxoPDV,
+                    notasPermitidas: notasPermitidas
                 },
-                fluxoPDV: fluxoPDV
+                fluxoPDV: fluxoPDV,
+                notasPermitidas: notasPermitidas
             }, { merge: true });
         }
 
@@ -1720,6 +1761,7 @@ async function salvarAssinaturaPeloDossie(e) {
         lojaDossieAtual.fluxoPDV = fluxoPDV;
         lojaDossieAtual.modulosLiberados = modulosLiberados;
         lojaDossieAtual.relatoriosPermitidos = relatoriosPermitidos;
+        lojaDossieAtual.notasPermitidas = notasPermitidas;
         lojaDossieAtual.geminiKey = geminiKey;
         if (!lojaDossieAtual.configEmpresa) lojaDossieAtual.configEmpresa = {};
         lojaDossieAtual.configEmpresa.geminiKey = geminiKey;
@@ -2620,7 +2662,7 @@ async function carregarPlanosMaster() {
                     const docExistente = listaPlanos[existenteIdx];
                     // Atualiza em background se faltar modeloPDV ou sistemaId
                     if (!docExistente.modeloPDV || !docExistente.sistemaId) {
-                        const atualizado = { ...p, ...docExistente, modeloPDV: docExistente.modeloPDV || p.modeloPDV, sistemaId: docExistente.sistemaId || p.sistemaId };
+                        const atualizado = { ...p, ...docExistente, modeloPDV: docExistente.modeloPDV || p.modeloPDV, sistemaId: docExistente.sistemaId || p.sistemaId, notasPermitidas: docExistente.notasPermitidas || p.notasPermitidas || [] };
                         listaPlanos[existenteIdx] = atualizado;
                         firebase.firestore().collection('planos_saas').doc(p.id).set({ modeloPDV: p.modeloPDV, sistemaId: p.sistemaId }, { merge: true }).catch(() => {});
                     }
@@ -2671,6 +2713,7 @@ async function sincronizarPlanosPadraoComBanco(forcar = true) {
                 batch.set(ref, {
                     sistemaId: dadosBanco.sistemaId || p.sistemaId,
                     modeloPDV: dadosBanco.modeloPDV || p.modeloPDV,
+                    notasPermitidas: dadosBanco.notasPermitidas || p.notasPermitidas || [],
                     ultimaAtualizacao: firebase.firestore.FieldValue.serverTimestamp()
                 }, { merge: true });
             }
@@ -2838,6 +2881,23 @@ function renderizarGridPlanosMaster() {
                     </div>
 
                     <div class="py-4 space-y-2">
+                        ${mods.includes('fiscal') ? `
+                            <div class="mb-3 p-2.5 rounded-xl bg-purple-950/30 border border-purple-800/40">
+                                <p class="text-[10px] font-extrabold uppercase tracking-wider text-purple-300 mb-1.5 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-stamp text-xs text-purple-400"></i> Documentos Fiscais Liberados:
+                                </p>
+                                <div class="flex flex-wrap gap-1">
+                                    ${(() => {
+                                        const np = Array.isArray(plano.notasPermitidas) ? plano.notasPermitidas : ['nfce', 'nfe', 'nfe_devolucao', 'nfse'];
+                                        const rotulos = { nfce: 'NFC-e (Cupom)', nfe: 'NF-e (Venda)', nfe_devolucao: 'Devolução', nfse: 'NFS-e (Serviços)' };
+                                        return Object.entries(rotulos).map(([k, lbl]) => {
+                                            const temNota = np.includes(k);
+                                            return `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded ${temNota ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' : 'bg-slate-800 text-slate-500 line-through'}">${lbl}</span>`;
+                                        }).join('');
+                                    })()}
+                                </div>
+                            </div>
+                        ` : ''}
                         <p class="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Módulos Inclusos:</p>
                         <ul class="space-y-1.5 text-xs text-slate-300">
                             ${Object.keys(nomesModulos).map(modKey => {
@@ -3022,6 +3082,15 @@ function abrirModalPlano(plano = null) {
         if (el) el.checked = mods.includes(k);
     });
 
+    // Tipos de notas fiscais liberadas no plano
+    const notasPadraoPlano = (plano && Array.isArray(plano.notasPermitidas))
+        ? plano.notasPermitidas
+        : (plano ? (plano.modulos?.includes('fiscal') ? ['nfce', 'nfe', 'nfe_devolucao', 'nfse'] : []) : ['nfce', 'nfe', 'nfe_devolucao', 'nfse']);
+    if (document.getElementById('fiscal-tipo-nfce')) document.getElementById('fiscal-tipo-nfce').checked = notasPadraoPlano.includes('nfce');
+    if (document.getElementById('fiscal-tipo-nfe')) document.getElementById('fiscal-tipo-nfe').checked = notasPadraoPlano.includes('nfe');
+    if (document.getElementById('fiscal-tipo-devolucao')) document.getElementById('fiscal-tipo-devolucao').checked = notasPadraoPlano.includes('nfe_devolucao');
+    if (document.getElementById('fiscal-tipo-nfse')) document.getElementById('fiscal-tipo-nfse').checked = notasPadraoPlano.includes('nfse');
+
     const rels = (plano && Array.isArray(plano.relatoriosPermitidos)) ? plano.relatoriosPermitidos : (plano ? (PLANOS_PADRAO.find(p => p.id === plano.id)?.relatoriosPermitidos || TODOS_RELATORIOS_SAAS) : [...TODOS_RELATORIOS_SAAS]);
     TODOS_RELATORIOS_SAAS.forEach(r => {
         const el = document.getElementById(`rel-${r}`);
@@ -3083,6 +3152,11 @@ async function salvarPlanoMaster(e) {
         const el = document.getElementById(`rel-${r}`);
         if (el && el.checked) relatoriosPermitidos.push(r);
     });
+    const notasPermitidas = [];
+    if (document.getElementById('fiscal-tipo-nfce')?.checked) notasPermitidas.push('nfce');
+    if (document.getElementById('fiscal-tipo-nfe')?.checked) notasPermitidas.push('nfe');
+    if (document.getElementById('fiscal-tipo-devolucao')?.checked) notasPermitidas.push('nfe_devolucao');
+    if (document.getElementById('fiscal-tipo-nfse')?.checked) notasPermitidas.push('nfse');
 
     let limiteUsuarios = 999999;
     if (!/ilimitad/i.test(usuarios)) {
@@ -3106,6 +3180,7 @@ async function salvarPlanoMaster(e) {
         descricao: desc,
         modeloPDV: modeloPDV,
         modulos: modulos,
+        notasPermitidas: notasPermitidas,
         relatoriosPermitidos: relatoriosPermitidos,
         destaque: destaque,
         ativo: ativo,
